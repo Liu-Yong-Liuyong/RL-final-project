@@ -29,7 +29,7 @@ if __name__ == "__main__":
     main()
 
 '''
-#when use pretrained model, it may looks like this?
+#when use pretrained model, it may look like this?
 from scripts.make_env import make_env
 from scripts.make_agent import make_agent
 from evaluation.evaluator import evaluate_agent
