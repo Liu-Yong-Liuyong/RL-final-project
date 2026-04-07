@@ -1,1 +1,14 @@
+#sample configuration
+env_name: frozenlake
+env_kwargs:
+  map_name: "4x4"
+  is_slippery: true
 
+method_name: random
+method_kwargs: {}
+
+eval:
+  num_episodes: 10
+  max_steps: 200
+
+result_path: results/frozenlake_random.json
