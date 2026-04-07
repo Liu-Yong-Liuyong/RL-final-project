@@ -27,3 +27,29 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+'''
+#when use pretrained model, it may looks like this?
+from scripts.make_env import make_env
+from scripts.make_agent import make_agent
+from evaluation.evaluator import evaluate_agent
+
+def main():
+    env_name = "frozenlake"
+    env_kwargs = {"map_name": "4x4", "is_slippery": True}
+
+    method_name = "ppo"
+    method_kwargs = {
+        "model_path": "results/frozenlake_ppo_model"
+    }
+
+    env = make_env(env_name, **env_kwargs)
+    agent = make_agent(method_name, env_name, env, **method_kwargs)
+
+    results = evaluate_agent(env, agent, num_episodes=20, max_steps=200)
+
+    print(results)
+
+if __name__ == "__main__":
+    main()
+'''
