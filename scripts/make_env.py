@@ -1,7 +1,7 @@
 """
 Factory function for creating benchmark environments.
 """
-
+'''
 from envs.gridworld_env import GridWorldEnv
 from envs.frozenlake_env import FrozenLakeEnv
 from envs.sparse_cartpole_env import SparseCartPoleEnv
@@ -26,5 +26,16 @@ def make_env(env_name: str, **kwargs):
         return FrozenLakeEnv(**kwargs)
     elif env_name == "cartpole":
         return SparseCartPoleEnv(**kwargs)
+    else:
+        raise ValueError(f"Unknown environment: {env_name}")
+'''
+#simple test for frozenlake_env
+from envs.frozenlake_env import FrozenLakeEnv
+
+def make_env(env_name: str, **kwargs):
+    env_name = env_name.lower()
+
+    if env_name == "frozenlake":
+        return FrozenLakeEnv(**kwargs)
     else:
         raise ValueError(f"Unknown environment: {env_name}")
