@@ -9,21 +9,6 @@ from evaluation.metrics import (
 )
 
 
-class RandomAgent:
-    """
-    A minimal random policy for testing environment/evaluator integration.
-    """
-
-    def __init__(self, action_space):
-        self.action_space = action_space
-
-    def predict(self, obs):
-        """
-        Return a random action.
-        """
-        return self.action_space.sample()
-
-
 def run_one_episode(env, agent, max_steps=1000):
     """
     Run one episode and collect benchmark statistics.
