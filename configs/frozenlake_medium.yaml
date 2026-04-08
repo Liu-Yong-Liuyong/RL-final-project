@@ -1,14 +1,16 @@
 #sample configuration
-env_name: frozenlake
-env_kwargs:
-  map_name: "4x4"
-  is_slippery: true
+env:
+  name: frozenlake
+  kwargs:
+    map_name: "4x4"
+    is_slippery: false
 
-method_name: random
-method_kwargs: {}
+train:
+  total_timesteps: 50000
+  learning_rate: 0.0003
+  gamma: 0.99
+  ent_coef: 0.01
+  verbose: 1
 
-eval:
-  num_episodes: 10
-  max_steps: 200
-
-result_path: results/frozenlake_random.json
+output:
+  save_path: "checkpoints/ppo_frozenlake_medium"
