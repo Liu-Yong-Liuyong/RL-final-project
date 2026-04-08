@@ -1,4 +1,4 @@
-#sample ppo agent, that can be used in evaluate.py for loading the pretrained model
+#sample ppo agent,just for evaluate, not for training, that can be used in evaluate.py for loading the pretrained model
 from stable_baselines3 import PPO
 
 class PPOAgent:
