@@ -29,3 +29,8 @@ train:
 
 output:
   save_path: "checkpoints/ppo_frozenlake_medium"
+
+eval:
+  num_episodes: 20
+  max_steps: 200
+  model_path: "checkpoints/ppo_frozenlake_medium.zip"
