@@ -5,12 +5,27 @@ env:
     map_name: "4x4"
     is_slippery: false
 
+wrappers:
+  sparse_reward:
+    enabled: false
+    kwargs: {}
+
+  exploration:
+    enabled: false
+    method: null
+    kwargs: {}
+
+agent:
+  name: ppo
+  kwargs:
+    policy: "MlpPolicy"
+    learning_rate: 0.0003
+    gamma: 0.99
+    ent_coef: 0.01
+    verbose: 1
+
 train:
   total_timesteps: 50000
-  learning_rate: 0.0003
-  gamma: 0.99
-  ent_coef: 0.01
-  verbose: 1
 
 output:
   save_path: "checkpoints/ppo_frozenlake_medium"
