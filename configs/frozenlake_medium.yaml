@@ -2,18 +2,44 @@
 env:
   name: frozenlake
   kwargs:
-    map_name: "4x4"
-    is_slippery: false
+    map_name: "8x8"
+    is_slippery: true
 
 wrappers:
   sparse_reward:
     enabled: false
     kwargs: {}
 
+  #exploration:
+    #enabled: true
+    #method: intrinsic_count
+    #kwargs:
+      #bonus_coef: 0.05
+  #exploration:
+    #enabled: false
+    #method: null
+    #kwargs: {}
+  #exploration:
+    #enabled: true
+    #method: icm
+    #kwargs:
+      #reward_scale: 0.001
+      #icm_lr: 0.001
+      #beta: 0.2
+      #update_freq: 1000
+      #feature_dim: 64
+      #hidden_dim: 128
+      #device: "cpu"
   exploration:
-    enabled: false
-    method: null
-    kwargs: {}
+    enabled: true
+    method: rnd
+    kwargs:
+      reward_scale: 0.001
+      rnd_lr: 0.001
+      update_freq: 1000
+      feature_dim: 64
+      hidden_dim: 128
+      device: "cpu"
 
 agent:
   name: ppo
@@ -25,12 +51,18 @@ agent:
     verbose: 1
 
 train:
-  total_timesteps: 50000
+  total_timesteps: 500000
 
 output:
-  save_path: "checkpoints/ppo_frozenlake_medium"
+  #save_path: "checkpoints/ppo_frozenlake_medium"
+  #save_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic"
+  #save_path: "checkpoints/ppo_frozenlake_medium_icm"
+  save_path: "checkpoints/ppo_frozenlake_medium_rnd"
 
 eval:
-  num_episodes: 20
-  max_steps: 200
-  model_path: "checkpoints/ppo_frozenlake_medium.zip"
+  num_episodes: 100
+  max_steps: 500
+  #model_path: "checkpoints/ppo_frozenlake_medium.zip"
+  #model_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic.zip"
+  #model_path: "checkpoints/ppo_frozenlake_medium_icm.zip"
+  model_path: "checkpoints/ppo_frozenlake_medium_rnd.zip"
