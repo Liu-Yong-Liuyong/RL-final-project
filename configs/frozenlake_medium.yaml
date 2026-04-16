@@ -19,27 +19,27 @@ wrappers:
     #enabled: false
     #method: null
     #kwargs: {}
-  #exploration:
-    #enabled: true
-    #method: icm
-    #kwargs:
-      #reward_scale: 0.001
-      #icm_lr: 0.001
-      #beta: 0.2
-      #update_freq: 1000
-      #feature_dim: 64
-      #hidden_dim: 128
-      #device: "cpu"
   exploration:
     enabled: true
-    method: rnd
+    method: icm
     kwargs:
       reward_scale: 0.001
-      rnd_lr: 0.001
+      icm_lr: 0.001
+      beta: 0.2
       update_freq: 1000
       feature_dim: 64
       hidden_dim: 128
       device: "cpu"
+  #exploration:
+    #enabled: true
+    #method: rnd
+    #kwargs:
+      #reward_scale: 0.001
+      #rnd_lr: 0.001
+      #update_freq: 1000
+      #feature_dim: 64
+      #hidden_dim: 128
+      #device: "cpu"
 
 agent:
   name: ppo
@@ -56,13 +56,13 @@ train:
 output:
   #save_path: "checkpoints/ppo_frozenlake_medium"
   #save_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic"
-  #save_path: "checkpoints/ppo_frozenlake_medium_icm"
-  save_path: "checkpoints/ppo_frozenlake_medium_rnd"
+  save_path: "checkpoints/ppo_frozenlake_medium_icm"
+  #save_path: "checkpoints/ppo_frozenlake_medium_rnd"
 
 eval:
   num_episodes: 100
   max_steps: 500
   #model_path: "checkpoints/ppo_frozenlake_medium.zip"
   #model_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic.zip"
-  #model_path: "checkpoints/ppo_frozenlake_medium_icm.zip"
-  model_path: "checkpoints/ppo_frozenlake_medium_rnd.zip"
+  model_path: "checkpoints/ppo_frozenlake_medium_icm.zip"
+  #model_path: "checkpoints/ppo_frozenlake_medium_rnd.zip"

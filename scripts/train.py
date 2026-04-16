@@ -1,13 +1,13 @@
 import argparse
 import yaml
 import torch
+import gymnasium as gym
 
 from scripts.make_env import make_env
 from algorithms.run_ppo import run_ppo
 from algorithms.callbacks import EWMASuccessCallback
 
-# 之後你 wrapper 實作好再打開
-# from wrappers.sparse_reward_wrapper import SparseRewardWrapper
+from wrappers.sparse_reward_wrappers import SparseRewardWrapper
 from wrappers.exploration_wrapper import IntrinsicRewardWrapper
 from wrappers.exploration_wrapper import CuriosityRewardWrapper
 from wrappers.exploration_wrapper import RNDRewardWrapper
@@ -23,6 +23,22 @@ def load_config(config_path: str) -> dict:
         return yaml.safe_load(f)
 
 
+def build_env_from_config(config: dict):
+    env_cfg = config["env"]
+    wrappers_cfg = config.get("wrappers", {})
+
+    env = make_env(
+        env_name=env_cfg["name"],
+        **env_cfg.get("kwargs", {})
+    )
+
+    sparse_cfg = wrappers_cfg.get("sparse_reward", {})
+    if sparse_cfg.get("enabled", False):
+        env = SparseRewardWrapper(env, **sparse_cfg.get("kwargs", {}))
+
+    return env
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -36,22 +52,14 @@ def main():
     config = load_config(args.config)
 
     env_cfg = config["env"]
-    env = make_env(
-        env_name=env_cfg["name"],
-        **env_cfg.get("kwargs", {})
-    )
-
     wrappers_cfg = config.get("wrappers", {})
 
-    sparse_cfg = wrappers_cfg.get("sparse_reward", {})
-    if sparse_cfg.get("enabled", False):
-        raise NotImplementedError("SparseRewardWrapper not connected yet.")
-        # env = SparseRewardWrapper(env, **sparse_cfg.get("kwargs", {}))
+    env = build_env_from_config(config)
+
+    callback_list = []
 
     exploration_cfg = wrappers_cfg.get("exploration", {})
-    callback_list = []
     if exploration_cfg.get("enabled", False):
-        #raise NotImplementedError("ExplorationWrapper not connected yet.")
         method = exploration_cfg.get("method", None)
 
         if method == "intrinsic_count":
@@ -59,13 +67,23 @@ def main():
                 env,
                 **exploration_cfg.get("kwargs", {})
             )
+
         elif method == "icm":
             obs_dim = env.observation_space.shape[0]
-            action_dim = env.action_space.n   # FrozenLake / discrete action 用這個
+
+            if isinstance(env.action_space, gym.spaces.Discrete):
+                action_type = "discrete"
+                action_dim = env.action_space.n
+            elif isinstance(env.action_space, gym.spaces.Box):
+                action_type = "continuous"
+                action_dim = env.action_space.shape[0]
+            else:
+                raise ValueError(f"Unsupported action space for ICM: {type(env.action_space)}")
 
             icm_module = ICMModule(
                 obs_dim=obs_dim,
                 action_dim=action_dim,
+                action_type=action_type,
                 feature_dim=exploration_cfg.get("kwargs", {}).get("feature_dim", 64),
                 hidden_dim=exploration_cfg.get("kwargs", {}).get("hidden_dim", 128),
                 device=exploration_cfg.get("kwargs", {}).get("device", "cpu"),
@@ -75,6 +93,7 @@ def main():
                 env,
                 icm_module=icm_module,
                 reward_scale=exploration_cfg.get("kwargs", {}).get("reward_scale", 0.01),
+                clip_intrinsic=exploration_cfg.get("kwargs", {}).get("clip_intrinsic", 5.0),
             )
 
             icm_optimizer = torch.optim.Adam(
@@ -91,6 +110,7 @@ def main():
                 verbose=1,
             )
             callback_list.append(icm_callback)
+
         elif method == "rnd":
             obs_dim = env.observation_space.shape[0]
 
@@ -119,8 +139,8 @@ def main():
                 update_freq=exploration_cfg.get("kwargs", {}).get("update_freq", 1000),
                 verbose=1,
             )
-
             callback_list.append(rnd_callback)
+
         else:
             raise ValueError(f"Unknown exploration wrapper method: {method}")
 
@@ -130,11 +150,9 @@ def main():
 
     if agent_cfg["name"].lower() != "ppo":
         raise ValueError(f"Unsupported agent: {agent_cfg['name']}")
-    #=================================
-    eval_env = make_env(
-        env_name=env_cfg["name"],
-        **env_cfg.get("kwargs", {})
-    )
+
+    eval_env = build_env_from_config(config)
+
     ewma_callback = EWMASuccessCallback(
         eval_env=eval_env,
         eval_freq=5000,
@@ -146,14 +164,13 @@ def main():
     )
     callback_list.append(ewma_callback)
 
-    # ================= merge callbacks =================
     if len(callback_list) == 0:
         callback = None
     elif len(callback_list) == 1:
         callback = callback_list[0]
     else:
         callback = CallbackList(callback_list)
-    # ===================================================
+
     run_ppo(
         env=env,
         total_timesteps=train_cfg["total_timesteps"],
@@ -161,15 +178,7 @@ def main():
         ppo_kwargs=agent_cfg.get("kwargs", {}),
         callback=callback,
     )
-    #===============================
-    '''
-    run_ppo(
-        env=env,
-        total_timesteps=train_cfg["total_timesteps"],
-        save_path=output_cfg["save_path"],
-        ppo_kwargs=agent_cfg.get("kwargs", {}),
-    )
-    '''
+
 
 if __name__ == "__main__":
     main()
