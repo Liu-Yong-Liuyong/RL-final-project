@@ -31,11 +31,14 @@ def make_env(env_name: str, **kwargs):
 '''
 #simple test for frozenlake_env
 from envs.frozenlake_env import FrozenLakeEnv
+from envs.gridworld_env import GridWorldEnv
 
 def make_env(env_name: str, **kwargs):
     env_name = env_name.lower()
 
     if env_name == "frozenlake":
         return FrozenLakeEnv(**kwargs)
+    elif env_name == "gridworld":
+        return GridWorldEnv(**kwargs)
     else:
         raise ValueError(f"Unknown environment: {env_name}")
