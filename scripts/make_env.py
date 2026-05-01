@@ -32,6 +32,7 @@ def make_env(env_name: str, **kwargs):
 #simple test for frozenlake_env
 from envs.frozenlake_env import FrozenLakeEnv
 from envs.gridworld_env import GridWorldEnv
+from envs.metaworld_reach_env import MetaWorldBenchmarkEnv
 
 def make_env(env_name: str, **kwargs):
     env_name = env_name.lower()
@@ -40,5 +41,7 @@ def make_env(env_name: str, **kwargs):
         return FrozenLakeEnv(**kwargs)
     elif env_name == "gridworld":
         return GridWorldEnv(**kwargs)
+    elif env_name == "metaworld":
+        return MetaWorldBenchmarkEnv(**kwargs)
     else:
         raise ValueError(f"Unknown environment: {env_name}")

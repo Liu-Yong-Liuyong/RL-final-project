@@ -4,11 +4,29 @@ import yaml
 from scripts.make_env import make_env
 from scripts.make_agent import make_agent
 from evaluation.evaluator import evaluate_agent
+from wrappers.sparse_reward_wrappers import SparseRewardWrapper
 
 
 def load_config(config_path: str) -> dict:
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+def build_env_from_config(config: dict, for_eval: bool = True):
+    env_cfg = config["env"]
+    env = make_env(
+        env_cfg["name"],
+        **env_cfg.get("kwargs", {})
+    )
+
+    wrappers_cfg = config.get("wrappers", {})
+
+    sparse_cfg = wrappers_cfg.get("sparse_reward", {})
+    if sparse_cfg.get("enabled", False):
+        env = SparseRewardWrapper(env, **sparse_cfg.get("kwargs", {}))
+
+    # evaluation 時通常不要再套 exploration wrapper
+    return env
 
 
 def main():
@@ -25,9 +43,8 @@ def main():
 
     env_cfg = config["env"]
     env_name = env_cfg["name"]
-    env_kwargs = env_cfg.get("kwargs", {})
 
-    env = make_env(env_name, **env_kwargs)
+    env = build_env_from_config(config, for_eval=True)
 
     agent_cfg = config["agent"]
     agent_name = agent_cfg["name"].lower()
