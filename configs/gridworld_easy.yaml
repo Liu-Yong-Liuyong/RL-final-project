@@ -5,9 +5,41 @@ env:
     height: 10
     goal_pos: [9, 9]
 
+wrappers:
+  sparse_reward:
+    enabled: true
+    kwargs:
+      success_reward: 10.0
+      failure_reward: 0.0
+
+  exploration:
+    enabled: true
+    method: icm
+    kwargs:
+      reward_scale: 0.0001
+      icm_lr: 0.0003
+      beta: 0.5
+      update_freq: 1000
+      feature_dim: 64
+      hidden_dim: 128
+      device: "cpu"
+      clip_intrinsic: 5.0
+
 agent:
-  name: random
-  kwargs: {}
+  name: ppo
+  kwargs:
+    policy: "MlpPolicy"
+    learning_rate: 0.0001
+    gamma: 0.99
+    ent_coef: 0.1
+    verbose: 1
+
+train:
+  total_timesteps: 500000
+
+output:
+  save_path: "checkpoints/ppo_gridworld_easy_icm"
+
 
 eval:
   num_episodes: 5
