@@ -3,7 +3,11 @@ env:
   kwargs:
     width: 10
     height: 10
-    goal_pos: [9, 9]
+    start_pos: [0,0]
+    goal_pos: [9,9]
+    num_obstacles: 5
+    random_seed: 42
+
 
 wrappers:
   sparse_reward:

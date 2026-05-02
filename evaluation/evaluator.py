@@ -23,6 +23,8 @@ def run_one_episode(env, agent, max_steps=1000):
     """
     obs, info = env.reset()
 
+    env.render()
+
     episode_return = 0.0
     visited_ids = set()
     visited_ids.add(info["coverage_id"])
@@ -34,6 +36,8 @@ def run_one_episode(env, agent, max_steps=1000):
     while not done and steps < max_steps:
         action = agent.predict(obs)
         obs, reward, terminated, truncated, info = env.step(action)
+
+        env.render()
 
         episode_return += float(reward)
         visited_ids.add(info["coverage_id"])
@@ -80,5 +84,7 @@ def evaluate_agent(env, agent, num_episodes=10, max_steps=1000):
         "avg_coverage_count": compute_average_coverage(coverage_values),
         "num_episodes": num_episodes,
     }
+
+    env.close()
 
     return metrics
