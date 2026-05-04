@@ -7,22 +7,32 @@ wrappers:
     enabled: false   # CartPole already uses sparse reward natively in SparseCartPoleEnv
     kwargs: {}
 
-  # --- Exploration variants (uncomment one block at a time) ---
+  # ---------------------------------------------------------------
+  # Exploration variants — uncomment ONE block at a time.
+  # Match the active block to the save_path / model_path below.
+  # ---------------------------------------------------------------
 
-  # Baseline: no exploration bonus
+  # [1] Vanilla PPO — no exploration bonus, minimal entropy
   #exploration:
     #enabled: false
     #method: null
     #kwargs: {}
 
-  # Count-based intrinsic reward
+  # [2] PPO + Entropy Regularization — no intrinsic wrapper,
+  #     but high ent_coef in agent kwargs drives stochastic exploration
+  #exploration:
+    #enabled: false
+    #method: null
+    #kwargs: {}
+
+  # [3] PPO + Count-based intrinsic reward
   #exploration:
     #enabled: true
     #method: intrinsic_count
     #kwargs:
       #bonus_coef: 0.05
 
-  # ICM (Intrinsic Curiosity Module)
+  # [4] PPO + ICM (Intrinsic Curiosity Module)
   exploration:
     enabled: true
     method: icm
@@ -36,7 +46,7 @@ wrappers:
       device: "cpu"
       clip_intrinsic: 5.0
 
-  # RND (Random Network Distillation)
+  # [5] PPO + RND (Random Network Distillation)
   #exploration:
     #enabled: true
     #method: rnd
@@ -48,6 +58,12 @@ wrappers:
       #hidden_dim: 128
       #device: "cpu"
 
+# ---------------------------------------------------------------
+# Agent kwargs — change ent_coef to switch between:
+#   Vanilla PPO           → ent_coef: 0.0
+#   Entropy Regularization → ent_coef: 0.1
+#   ICM / RND             → ent_coef: 0.01
+# ---------------------------------------------------------------
 agent:
   name: ppo
   kwargs:
@@ -61,15 +77,17 @@ train:
   total_timesteps: 200000
 
 output:
-  #save_path: "checkpoints/ppo_cartpole_sparse"
-  #save_path: "checkpoints/ppo_cartpole_sparse_count_intrinsic"
-  save_path: "checkpoints/ppo_cartpole_sparse_icm"
-  #save_path: "checkpoints/ppo_cartpole_sparse_rnd"
+  #save_path: "checkpoints/ppo_cartpole_sparse"           # [1] Vanilla PPO
+  #save_path: "checkpoints/ppo_cartpole_sparse_entropy"   # [2] Entropy Reg
+  #save_path: "checkpoints/ppo_cartpole_sparse_count"     # [3] Count
+  save_path: "checkpoints/ppo_cartpole_sparse_icm"        # [4] ICM
+  #save_path: "checkpoints/ppo_cartpole_sparse_rnd"       # [5] RND
 
 eval:
   num_episodes: 20
   max_steps: 500
   #model_path: "checkpoints/ppo_cartpole_sparse.zip"
-  #model_path: "checkpoints/ppo_cartpole_sparse_count_intrinsic.zip"
+  #model_path: "checkpoints/ppo_cartpole_sparse_entropy.zip"
+  #model_path: "checkpoints/ppo_cartpole_sparse_count.zip"
   model_path: "checkpoints/ppo_cartpole_sparse_icm.zip"
   #model_path: "checkpoints/ppo_cartpole_sparse_rnd.zip"
