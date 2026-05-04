@@ -2,6 +2,8 @@ import argparse
 import yaml
 import torch
 import gymnasium as gym
+import random
+import numpy as np
 
 from scripts.make_env import make_env
 from algorithms.run_ppo import run_ppo
@@ -51,10 +53,19 @@ def main():
 
     config = load_config(args.config)
 
+    seed = config.get("seed", 42)
+
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
     env_cfg = config["env"]
     wrappers_cfg = config.get("wrappers", {})
 
     env = build_env_from_config(config)
+    env.reset(seed=seed)
 
     callback_list = []
 
@@ -152,6 +163,7 @@ def main():
         raise ValueError(f"Unsupported agent: {agent_cfg['name']}")
 
     eval_env = build_env_from_config(config)
+    eval_env.reset(seed=seed)
 
     ewma_callback = EWMASuccessCallback(
         eval_env=eval_env,
