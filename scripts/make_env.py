@@ -33,6 +33,7 @@ def make_env(env_name: str, **kwargs):
 from envs.frozenlake_env import FrozenLakeEnv
 from envs.gridworld_env import GridWorldEnv
 from envs.metaworld_reach_env import MetaWorldBenchmarkEnv
+from envs.sparse_cartpole_env import SparseCartPoleEnv
 
 def make_env(env_name: str, **kwargs):
     env_name = env_name.lower()
@@ -43,5 +44,7 @@ def make_env(env_name: str, **kwargs):
         return GridWorldEnv(**kwargs)
     elif env_name == "metaworld":
         return MetaWorldBenchmarkEnv(**kwargs)
+    elif env_name == "cartpole":
+        return SparseCartPoleEnv(**kwargs)
     else:
         raise ValueError(f"Unknown environment: {env_name}")

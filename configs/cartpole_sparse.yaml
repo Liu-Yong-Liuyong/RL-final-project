@@ -1,1 +1,75 @@
+env:
+  name: cartpole
+  kwargs: {}
 
+wrappers:
+  sparse_reward:
+    enabled: false   # CartPole already uses sparse reward natively in SparseCartPoleEnv
+    kwargs: {}
+
+  # --- Exploration variants (uncomment one block at a time) ---
+
+  # Baseline: no exploration bonus
+  #exploration:
+    #enabled: false
+    #method: null
+    #kwargs: {}
+
+  # Count-based intrinsic reward
+  #exploration:
+    #enabled: true
+    #method: intrinsic_count
+    #kwargs:
+      #bonus_coef: 0.05
+
+  # ICM (Intrinsic Curiosity Module)
+  exploration:
+    enabled: true
+    method: icm
+    kwargs:
+      reward_scale: 0.001
+      icm_lr: 0.0003
+      beta: 0.2
+      update_freq: 1000
+      feature_dim: 64
+      hidden_dim: 128
+      device: "cpu"
+      clip_intrinsic: 5.0
+
+  # RND (Random Network Distillation)
+  #exploration:
+    #enabled: true
+    #method: rnd
+    #kwargs:
+      #reward_scale: 0.001
+      #rnd_lr: 0.001
+      #update_freq: 1000
+      #feature_dim: 64
+      #hidden_dim: 128
+      #device: "cpu"
+
+agent:
+  name: ppo
+  kwargs:
+    policy: "MlpPolicy"
+    learning_rate: 0.0003
+    gamma: 0.99
+    ent_coef: 0.01
+    verbose: 1
+
+train:
+  total_timesteps: 200000
+
+output:
+  #save_path: "checkpoints/ppo_cartpole_sparse"
+  #save_path: "checkpoints/ppo_cartpole_sparse_count_intrinsic"
+  save_path: "checkpoints/ppo_cartpole_sparse_icm"
+  #save_path: "checkpoints/ppo_cartpole_sparse_rnd"
+
+eval:
+  num_episodes: 20
+  max_steps: 500
+  #model_path: "checkpoints/ppo_cartpole_sparse.zip"
+  #model_path: "checkpoints/ppo_cartpole_sparse_count_intrinsic.zip"
+  model_path: "checkpoints/ppo_cartpole_sparse_icm.zip"
+  #model_path: "checkpoints/ppo_cartpole_sparse_rnd.zip"
