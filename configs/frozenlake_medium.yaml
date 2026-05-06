@@ -5,6 +5,8 @@ env:
     map_name: "8x8"
     is_slippery: true
 
+seed: 42
+
 wrappers:
   sparse_reward:
     enabled: false
@@ -30,6 +32,7 @@ wrappers:
       feature_dim: 64
       hidden_dim: 128
       device: "cpu"
+      clip_intrinsic: null
   #exploration:
     #enabled: true
     #method: rnd
@@ -55,6 +58,7 @@ train:
 
 output:
   #save_path: "checkpoints/ppo_frozenlake_medium"
+  #save_path: "checkpoints/ppo_frozenlake_medium_entcoef"
   #save_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic"
   save_path: "checkpoints/ppo_frozenlake_medium_icm"
   #save_path: "checkpoints/ppo_frozenlake_medium_rnd"
@@ -63,6 +67,7 @@ eval:
   num_episodes: 100
   max_steps: 500
   #model_path: "checkpoints/ppo_frozenlake_medium.zip"
+  #model_path: "checkpoints/ppo_frozenlake_medium_entcoef.zip"
   #model_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic.zip"
   model_path: "checkpoints/ppo_frozenlake_medium_icm.zip"
   #model_path: "checkpoints/ppo_frozenlake_medium_rnd.zip"
