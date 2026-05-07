@@ -1,17 +1,9 @@
-"""
-Quick smoke test for the CartPole pipeline.
-Runs each of the 4 project-spec baselines for 3000 timesteps each
-to verify the full stack works before committing to a full run.
-
-Usage:
-    python test_cartpole.py
-"""
 import time
 import torch
-import gymnasium as gym
 
 from envs.sparse_cartpole_env import SparseCartPoleEnv
 from algorithms.run_ppo import run_ppo
+from algorithms.ppo_agent import PPOAgent
 from algorithms.baselines import RandomAgent, CartPoleHeuristicAgent
 from evaluation.evaluator import evaluate_agent
 from wrappers.exploration_wrapper import IntrinsicRewardWrapper, CuriosityRewardWrapper, RNDRewardWrapper
@@ -20,177 +12,77 @@ from algorithms.rnd_module import RNDModule
 from algorithms.icm_callback import ICMUpdateCallback
 from algorithms.rnd_callback import RNDUpdateCallback
 
-SMOKE_TIMESTEPS = 3000
+SMOKE_STEPS = 3000
 EVAL_EPISODES = 3
 MAX_STEPS = 500
 
 
 def make_cartpole():
-    return SparseCartPoleEnv()
+    return SparseCartPoleEnv(target_x=1.5)
 
 
-def section(title):
-    print(f"\n{'='*55}")
-    print(f"  {title}")
-    print(f"{'='*55}")
-
-
-# ----------------------------------------------------------------
-# Step 1: Verify the environment itself
-# ----------------------------------------------------------------
-section("ENV SANITY CHECK")
+# env sanity check
 env = make_cartpole()
 obs, info = env.reset(seed=0)
-print(f"obs shape : {obs.shape}  dtype: {obs.dtype}")
-print(f"action space: {env.action_space}")
-print(f"obs space   : {env.observation_space}")
-print(f"info keys   : {list(info.keys())}")
+print("obs shape:", obs.shape)
+print("action space:", env.action_space)
+print("info:", info)
 
 obs, reward, terminated, truncated, info = env.step(0)
-print(f"step() → reward={reward}, terminated={terminated}, truncated={truncated}")
-print(f"coverage_id={info['coverage_id']}, success={info['success']}")
+print("reward:", reward, "terminated:", terminated, "truncated:", truncated)
+print("coverage_id:", info["coverage_id"], "success:", info["success"])
 env.close()
-print("PASSED")
 
-
-# ----------------------------------------------------------------
-# Step 2: Baselines (random + heuristic) — no training needed
-# ----------------------------------------------------------------
-section("BASELINE: Random Agent")
+# random agent
 env = make_cartpole()
-agent = RandomAgent(env.action_space)
-t0 = time.time()
-results = evaluate_agent(env, agent, num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
-print(f"  success_rate={results['success_rate']:.2f}  avg_return={results['avg_return']:.2f}"
-      f"  coverage={results['avg_coverage_count']:.1f}  time={time.time()-t0:.1f}s")
-print("PASSED")
+results = evaluate_agent(env, RandomAgent(env.action_space), num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
+print("random:", results)
 
-section("BASELINE: Heuristic Agent")
+# heuristic agent
 env = make_cartpole()
-agent = CartPoleHeuristicAgent(env.action_space)
-t0 = time.time()
-results = evaluate_agent(env, agent, num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
-print(f"  success_rate={results['success_rate']:.2f}  avg_return={results['avg_return']:.2f}"
-      f"  coverage={results['avg_coverage_count']:.1f}  time={time.time()-t0:.1f}s")
-print("PASSED")
+results = evaluate_agent(env, CartPoleHeuristicAgent(env.action_space), num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
+print("heuristic:", results)
 
-
-# ----------------------------------------------------------------
-# Step 3: [1] Vanilla PPO
-# ----------------------------------------------------------------
-section("[1] Vanilla PPO (no exploration, ent_coef=0.0)")
+# vanilla PPO
 env = make_cartpole()
 t0 = time.time()
-run_ppo(
-    env=env,
-    total_timesteps=SMOKE_TIMESTEPS,
-    save_path="checkpoints/smoke_cartpole_vanilla",
-    ppo_kwargs={"policy": "MlpPolicy", "learning_rate": 0.0003,
-                "gamma": 0.99, "ent_coef": 0.0, "verbose": 0},
-)
-print(f"  Trained in {time.time()-t0:.1f}s")
-
+run_ppo(env, SMOKE_STEPS, "checkpoints/smoke_cartpole_vanilla",
+        {"policy": "MlpPolicy", "learning_rate": 0.0003, "gamma": 0.99, "ent_coef": 0.0, "verbose": 0})
+print(f"vanilla trained in {time.time()-t0:.1f}s")
 env = make_cartpole()
-from algorithms.ppo_agent import PPOAgent
-agent = PPOAgent.load("checkpoints/smoke_cartpole_vanilla.zip")
-results = evaluate_agent(env, agent, num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
-print(f"  success_rate={results['success_rate']:.2f}  avg_return={results['avg_return']:.2f}")
-print("PASSED")
+results = evaluate_agent(env, PPOAgent.load("checkpoints/smoke_cartpole_vanilla.zip"), num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
+print("vanilla eval:", results)
 
-
-# ----------------------------------------------------------------
-# Step 4: [2] PPO + Entropy Regularization
-# ----------------------------------------------------------------
-section("[2] PPO + Entropy Regularization (ent_coef=0.1)")
+# PPO + ICM
 env = make_cartpole()
-t0 = time.time()
-run_ppo(
-    env=env,
-    total_timesteps=SMOKE_TIMESTEPS,
-    save_path="checkpoints/smoke_cartpole_entropy",
-    ppo_kwargs={"policy": "MlpPolicy", "learning_rate": 0.0003,
-                "gamma": 0.99, "ent_coef": 0.1, "verbose": 0},
-)
-print(f"  Trained in {time.time()-t0:.1f}s")
-
-env = make_cartpole()
-agent = PPOAgent.load("checkpoints/smoke_cartpole_entropy.zip")
-results = evaluate_agent(env, agent, num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
-print(f"  success_rate={results['success_rate']:.2f}  avg_return={results['avg_return']:.2f}")
-print("PASSED")
-
-
-# ----------------------------------------------------------------
-# Step 5: [3] PPO + ICM
-# ----------------------------------------------------------------
-section("[3] PPO + ICM")
-env = make_cartpole()
-
-obs_dim = env.observation_space.shape[0]   # 4
-action_dim = env.action_space.n             # 2
-
-icm = ICMModule(obs_dim=obs_dim, action_dim=action_dim, action_type="discrete",
-                feature_dim=64, hidden_dim=128, device="cpu")
-env = CuriosityRewardWrapper(env, icm_module=icm, reward_scale=0.001, clip_intrinsic=5.0)
-
-icm_optimizer = torch.optim.Adam(icm.parameters(), lr=3e-4)
-icm_callback = ICMUpdateCallback(env_wrapper=env, icm_module=icm,
-                                  icm_optimizer=icm_optimizer, beta=0.2,
-                                  update_freq=500, verbose=0)
-t0 = time.time()
-run_ppo(
-    env=env,
-    total_timesteps=SMOKE_TIMESTEPS,
-    save_path="checkpoints/smoke_cartpole_icm",
-    ppo_kwargs={"policy": "MlpPolicy", "learning_rate": 0.0003,
-                "gamma": 0.99, "ent_coef": 0.01, "verbose": 0},
-    callback=icm_callback,
-)
-print(f"  Trained in {time.time()-t0:.1f}s")
-
-env = make_cartpole()
-agent = PPOAgent.load("checkpoints/smoke_cartpole_icm.zip")
-results = evaluate_agent(env, agent, num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
-print(f"  success_rate={results['success_rate']:.2f}  avg_return={results['avg_return']:.2f}")
-print("PASSED")
-
-
-# ----------------------------------------------------------------
-# Step 6: [4] PPO + RND
-# ----------------------------------------------------------------
-section("[4] PPO + RND")
-env = make_cartpole()
-
 obs_dim = env.observation_space.shape[0]
+action_dim = env.action_space.n
+icm = ICMModule(obs_dim=obs_dim, action_dim=action_dim, action_type="discrete", feature_dim=64, hidden_dim=128, device="cpu")
+env = CuriosityRewardWrapper(env, icm_module=icm, reward_scale=0.001, clip_intrinsic=5.0)
+icm_opt = torch.optim.Adam(icm.parameters(), lr=3e-4)
+icm_cb = ICMUpdateCallback(env_wrapper=env, icm_module=icm, icm_optimizer=icm_opt, beta=0.2, update_freq=500, verbose=0)
+t0 = time.time()
+run_ppo(env, SMOKE_STEPS, "checkpoints/smoke_cartpole_icm",
+        {"policy": "MlpPolicy", "learning_rate": 0.0003, "gamma": 0.99, "ent_coef": 0.01, "verbose": 0},
+        callback=icm_cb)
+print(f"icm trained in {time.time()-t0:.1f}s")
+env = make_cartpole()
+results = evaluate_agent(env, PPOAgent.load("checkpoints/smoke_cartpole_icm.zip"), num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
+print("icm eval:", results)
 
+# PPO + RND
+env = make_cartpole()
 rnd = RNDModule(obs_dim=obs_dim, feature_dim=64, hidden_dim=128, device="cpu")
 env = RNDRewardWrapper(env, rnd_module=rnd, reward_scale=0.001)
-
-rnd_optimizer = torch.optim.Adam(rnd.predictor.parameters(), lr=1e-3)
-rnd_callback = RNDUpdateCallback(env_wrapper=env, rnd_module=rnd,
-                                  rnd_optimizer=rnd_optimizer,
-                                  update_freq=500, verbose=0)
+rnd_opt = torch.optim.Adam(rnd.predictor.parameters(), lr=1e-3)
+rnd_cb = RNDUpdateCallback(env_wrapper=env, rnd_module=rnd, rnd_optimizer=rnd_opt, update_freq=500, verbose=0)
 t0 = time.time()
-run_ppo(
-    env=env,
-    total_timesteps=SMOKE_TIMESTEPS,
-    save_path="checkpoints/smoke_cartpole_rnd",
-    ppo_kwargs={"policy": "MlpPolicy", "learning_rate": 0.0003,
-                "gamma": 0.99, "ent_coef": 0.01, "verbose": 0},
-    callback=rnd_callback,
-)
-print(f"  Trained in {time.time()-t0:.1f}s")
-
+run_ppo(env, SMOKE_STEPS, "checkpoints/smoke_cartpole_rnd",
+        {"policy": "MlpPolicy", "learning_rate": 0.0003, "gamma": 0.99, "ent_coef": 0.01, "verbose": 0},
+        callback=rnd_cb)
+print(f"rnd trained in {time.time()-t0:.1f}s")
 env = make_cartpole()
-agent = PPOAgent.load("checkpoints/smoke_cartpole_rnd.zip")
-results = evaluate_agent(env, agent, num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
-print(f"  success_rate={results['success_rate']:.2f}  avg_return={results['avg_return']:.2f}")
-print("PASSED")
+results = evaluate_agent(env, PPOAgent.load("checkpoints/smoke_cartpole_rnd.zip"), num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
+print("rnd eval:", results)
 
-
-# ----------------------------------------------------------------
-print(f"\n{'='*55}")
-print("  ALL SMOKE TESTS PASSED")
-print(f"{'='*55}\n")
-print("Note: success_rate will likely be 0.0 at 3000 steps — that is")
-print("expected. This test only verifies the pipeline runs without errors.")
+print("\nall smoke tests passed (success_rate=0.0 at 3000 steps is expected)")

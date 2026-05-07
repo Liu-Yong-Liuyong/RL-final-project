@@ -58,7 +58,6 @@ class EWMASuccessCallback(BaseCallback):
                 f"avg_coverage={results['avg_coverage_count']:.1f}"
             )
 
-        # Log to wandb if a run is active — no-op if wandb isn't installed or initialized
         try:
             import wandb
             if wandb.run is not None:

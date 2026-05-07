@@ -3,7 +3,7 @@ seed: 42
 env:
   name: cartpole
   kwargs:
-    target_x: 1.5   # Option B: cart must reach this x-position while balancing
+    target_x: 1.5
 
 wrappers:
   sparse_reward:
@@ -12,32 +12,26 @@ wrappers:
       success_reward: 10.0
       failure_reward: 0.0
 
-  # ---------------------------------------------------------------
-  # Exploration variants — uncomment ONE block at a time.
-  # Also update ent_coef in agent.kwargs and save_path/model_path.
-  # ---------------------------------------------------------------
-
-  # [1] Vanilla PPO — no exploration bonus, minimal entropy
+  # [1] Vanilla PPO
   #exploration:
     #enabled: false
     #method: null
     #kwargs: {}
 
-  # [2] PPO + Entropy Regularization — no intrinsic wrapper,
-  #     high ent_coef pushes toward stochastic exploration
+  # [2] Entropy Regularization (set ent_coef: 0.1 in agent kwargs)
   #exploration:
     #enabled: false
     #method: null
     #kwargs: {}
 
-  # [3] PPO + Count-based intrinsic reward
+  # [3] Count-based
   #exploration:
     #enabled: true
     #method: intrinsic_count
     #kwargs:
       #bonus_coef: 0.05
 
-  # [4] PPO + ICM (Intrinsic Curiosity Module)
+  # [4] ICM
   exploration:
     enabled: true
     method: icm
@@ -51,7 +45,7 @@ wrappers:
       device: "cpu"
       clip_intrinsic: 5.0
 
-  # [5] PPO + RND (Random Network Distillation)
+  # [5] RND
   #exploration:
     #enabled: true
     #method: rnd
@@ -63,12 +57,6 @@ wrappers:
       #hidden_dim: 128
       #device: "cpu"
 
-# ---------------------------------------------------------------
-# Agent kwargs — change ent_coef to switch between:
-#   Vanilla PPO            → ent_coef: 0.0
-#   Entropy Regularization → ent_coef: 0.1
-#   ICM / RND / Count      → ent_coef: 0.01
-# ---------------------------------------------------------------
 agent:
   name: ppo
   kwargs:
@@ -83,11 +71,11 @@ train:
   ewma_max_steps: 500
 
 output:
-  #save_path: "checkpoints/ppo_cartpole_sparse"           # [1] Vanilla PPO
-  #save_path: "checkpoints/ppo_cartpole_sparse_entropy"   # [2] Entropy Reg
-  #save_path: "checkpoints/ppo_cartpole_sparse_count"     # [3] Count
-  save_path: "checkpoints/ppo_cartpole_sparse_icm"        # [4] ICM
-  #save_path: "checkpoints/ppo_cartpole_sparse_rnd"       # [5] RND
+  #save_path: "checkpoints/ppo_cartpole_sparse"
+  #save_path: "checkpoints/ppo_cartpole_sparse_entropy"
+  #save_path: "checkpoints/ppo_cartpole_sparse_count"
+  save_path: "checkpoints/ppo_cartpole_sparse_icm"
+  #save_path: "checkpoints/ppo_cartpole_sparse_rnd"
 
 eval:
   num_episodes: 20
@@ -98,12 +86,8 @@ eval:
   model_path: "checkpoints/ppo_cartpole_sparse_icm.zip"
   #model_path: "checkpoints/ppo_cartpole_sparse_rnd.zip"
 
-# ---------------------------------------------------------------
-# Weights & Biases — set enabled: true to log training curves.
-# Each baseline run should use a distinct name for easy comparison.
-# ---------------------------------------------------------------
 wandb:
   enabled: false
   project: "rl-exploration-benchmark"
-  name: "cartpole-icm"          # change per run: cartpole-vanilla, cartpole-entropy, etc.
-  tags: ["cartpole", "icm"]     # change per run
+  name: "cartpole-icm"
+  tags: ["cartpole", "icm"]
