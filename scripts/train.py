@@ -64,6 +64,19 @@ def main():
     seed = config.get("seed", 42)
     set_global_seeds(seed)
 
+    wandb_cfg = config.get("wandb", {})
+    if wandb_cfg.get("enabled", False):
+        try:
+            import wandb
+            wandb.init(
+                project=wandb_cfg.get("project", "rl-exploration-benchmark"),
+                name=wandb_cfg.get("name", None),
+                tags=wandb_cfg.get("tags", []),
+                config=config,
+            )
+        except ImportError:
+            print("[WARNING] wandb not installed — skipping wandb logging. Run: pip install wandb")
+
     env_cfg = config["env"]
     wrappers_cfg = config.get("wrappers", {})
 

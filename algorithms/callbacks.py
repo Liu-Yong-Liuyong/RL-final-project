@@ -2,6 +2,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from evaluation.evaluator import evaluate_agent
 from algorithms.ppo_agent import PPOAgent
 
+
 class EWMASuccessCallback(BaseCallback):
     def __init__(
         self,
@@ -52,8 +53,26 @@ class EWMASuccessCallback(BaseCallback):
             print(
                 f"[Eval] steps={self.num_timesteps}, "
                 f"success_rate={current_success_rate:.3f}, "
-                f"ewma_success_rate={self.ewma_success_rate:.3f}"
+                f"ewma_success_rate={self.ewma_success_rate:.3f}, "
+                f"avg_return={results['avg_return']:.3f}, "
+                f"avg_coverage={results['avg_coverage_count']:.1f}"
             )
+
+        # Log to wandb if a run is active — no-op if wandb isn't installed or initialized
+        try:
+            import wandb
+            if wandb.run is not None:
+                wandb.log(
+                    {
+                        "eval/success_rate": current_success_rate,
+                        "eval/ewma_success_rate": self.ewma_success_rate,
+                        "eval/avg_return": results["avg_return"],
+                        "eval/avg_coverage_count": results["avg_coverage_count"],
+                    },
+                    step=self.num_timesteps,
+                )
+        except ImportError:
+            pass
 
         if self.ewma_success_rate >= self.success_threshold:
             if self.verbose > 0:
@@ -61,6 +80,6 @@ class EWMASuccessCallback(BaseCallback):
                     f"[Early Stop] EWMA success rate "
                     f"{self.ewma_success_rate:.3f} >= {self.success_threshold:.3f}"
                 )
-            return False  # stop training
+            return False
 
         return True

@@ -1,28 +1,34 @@
 import gymnasium as gym
-import numpy as np
 from envs.base_env import BaseBenchmarkEnv
 
 
 class SparseCartPoleEnv(BaseBenchmarkEnv):
     """
-    CartPole-v1 with sparse rewards.
+    CartPole-v1 with a sparse exploration-oriented reward (Option B).
 
-    Dense reward (step survived) is replaced by a single sparse signal:
-    +1.0 when the episode is truncated (pole stayed up for the full time limit),
-    0.0 for every other step.
+    The agent must move the cart to x >= target_x while keeping the pole
+    balanced. This is a genuine exploration challenge: the natural
+    "safe" policy keeps the cart centered, so the agent must actively
+    explore rightward movement to ever receive a reward.
 
-    Success = episode ends via truncation (survived), not termination (pole fell).
-    Coverage = (angle_bin, angular_velocity_bin) rounded to 1 decimal place.
+    Reward: +1.0 the first time the cart reaches target_x in an episode
+            without the pole having fallen. 0.0 every other step.
+    Success: same condition — cart reached target_x while alive.
+    Coverage: (cart_pos_bin, pole_angle_bin) rounded to 1 decimal each,
+              capturing how broadly the agent explores position × balance.
     """
 
-    def __init__(self):
+    def __init__(self, target_x: float = 1.5):
         super().__init__(task_name="SparseCartPole")
         self.env = gym.make("CartPole-v1")
         self.observation_space = self.env.observation_space
         self.action_space = self.env.action_space
+        self.target_x = target_x
+        self._success_this_episode = False
 
     def reset(self, seed=None, options=None):
         obs, info = self.env.reset(seed=seed, options=options)
+        self._success_this_episode = False
         info["success"] = False
         info = self.build_info(obs, info)
         return obs, info
@@ -30,9 +36,17 @@ class SparseCartPoleEnv(BaseBenchmarkEnv):
     def step(self, action):
         obs, _dense_reward, terminated, truncated, info = self.env.step(action)
 
-        # sparse: reward only when the agent survives the full episode
-        success = truncated and not terminated
-        sparse_reward = 1.0 if success else 0.0
+        cart_pos = float(obs[0])
+
+        # Reward only on the first step the cart reaches target_x while still alive.
+        # After that, _success_this_episode is True so no further reward is given.
+        if cart_pos >= self.target_x and not terminated and not self._success_this_episode:
+            success = True
+            sparse_reward = 1.0
+            self._success_this_episode = True
+        else:
+            success = False
+            sparse_reward = 0.0
 
         info["success"] = success
         info["dense_reward"] = _dense_reward
@@ -41,10 +55,10 @@ class SparseCartPoleEnv(BaseBenchmarkEnv):
         return obs, sparse_reward, terminated, truncated, info
 
     def get_coverage_id(self, obs):
-        # obs = [cart_pos, cart_vel, pole_angle, pole_angular_vel]
+        # (cart_pos, pole_angle) — captures both exploration breadth and stability
+        pos_bin = round(float(obs[0]), 1)
         angle_bin = round(float(obs[2]), 1)
-        angvel_bin = round(float(obs[3]), 1)
-        return (angle_bin, angvel_bin)
+        return (pos_bin, angle_bin)
 
     def is_success(self, obs, info=None):
         if info is not None and "success" in info:

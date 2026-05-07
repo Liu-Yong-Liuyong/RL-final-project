@@ -2,7 +2,8 @@ seed: 42
 
 env:
   name: cartpole
-  kwargs: {}
+  kwargs:
+    target_x: 1.5   # Option B: cart must reach this x-position while balancing
 
 wrappers:
   sparse_reward:
@@ -13,7 +14,7 @@ wrappers:
 
   # ---------------------------------------------------------------
   # Exploration variants — uncomment ONE block at a time.
-  # Match the active block to the save_path / model_path below.
+  # Also update ent_coef in agent.kwargs and save_path/model_path.
   # ---------------------------------------------------------------
 
   # [1] Vanilla PPO — no exploration bonus, minimal entropy
@@ -23,7 +24,7 @@ wrappers:
     #kwargs: {}
 
   # [2] PPO + Entropy Regularization — no intrinsic wrapper,
-  #     but high ent_coef in agent kwargs drives stochastic exploration
+  #     high ent_coef pushes toward stochastic exploration
   #exploration:
     #enabled: false
     #method: null
@@ -66,7 +67,7 @@ wrappers:
 # Agent kwargs — change ent_coef to switch between:
 #   Vanilla PPO            → ent_coef: 0.0
 #   Entropy Regularization → ent_coef: 0.1
-#   ICM / RND              → ent_coef: 0.01
+#   ICM / RND / Count      → ent_coef: 0.01
 # ---------------------------------------------------------------
 agent:
   name: ppo
@@ -79,7 +80,7 @@ agent:
 
 train:
   total_timesteps: 200000
-  ewma_max_steps: 500    # CartPole truncates at 500 steps — must match for EWMA to detect success
+  ewma_max_steps: 500
 
 output:
   #save_path: "checkpoints/ppo_cartpole_sparse"           # [1] Vanilla PPO
@@ -96,3 +97,13 @@ eval:
   #model_path: "checkpoints/ppo_cartpole_sparse_count.zip"
   model_path: "checkpoints/ppo_cartpole_sparse_icm.zip"
   #model_path: "checkpoints/ppo_cartpole_sparse_rnd.zip"
+
+# ---------------------------------------------------------------
+# Weights & Biases — set enabled: true to log training curves.
+# Each baseline run should use a distinct name for easy comparison.
+# ---------------------------------------------------------------
+wandb:
+  enabled: false
+  project: "rl-exploration-benchmark"
+  name: "cartpole-icm"          # change per run: cartpole-vanilla, cartpole-entropy, etc.
+  tags: ["cartpole", "icm"]     # change per run
