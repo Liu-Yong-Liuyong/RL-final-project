@@ -43,15 +43,15 @@ env = make_cartpole()
 results = evaluate_agent(env, CartPoleHeuristicAgent(env.action_space), num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
 print("heuristic:", results)
 
-# vanilla PPO
+# PPO + entropy regularization (baseline)
 env = make_cartpole()
 t0 = time.time()
-run_ppo(env, SMOKE_STEPS, "checkpoints/smoke_cartpole_vanilla",
-        {"policy": "MlpPolicy", "learning_rate": 0.0003, "gamma": 0.99, "ent_coef": 0.0, "verbose": 0})
-print(f"vanilla trained in {time.time()-t0:.1f}s")
+run_ppo(env, SMOKE_STEPS, "checkpoints/smoke_cartpole_entropy",
+        {"policy": "MlpPolicy", "learning_rate": 0.0003, "gamma": 0.99, "ent_coef": 0.1, "verbose": 0})
+print(f"entropy trained in {time.time()-t0:.1f}s")
 env = make_cartpole()
-results = evaluate_agent(env, PPOAgent.load("checkpoints/smoke_cartpole_vanilla.zip"), num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
-print("vanilla eval:", results)
+results = evaluate_agent(env, PPOAgent.load("checkpoints/smoke_cartpole_entropy.zip"), num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
+print("entropy eval:", results)
 
 # PPO + ICM
 env = make_cartpole()
@@ -85,4 +85,4 @@ env = make_cartpole()
 results = evaluate_agent(env, PPOAgent.load("checkpoints/smoke_cartpole_rnd.zip"), num_episodes=EVAL_EPISODES, max_steps=MAX_STEPS)
 print("rnd eval:", results)
 
-print("\nall smoke tests passed (success_rate=0.0 at 3000 steps is expected)")
+print("\nall smoke tests passed (success_rate=0.0 at 3000 steps is expected — that is normal)")
