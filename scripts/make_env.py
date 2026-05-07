@@ -29,10 +29,8 @@ def make_env(env_name: str, **kwargs):
     else:
         raise ValueError(f"Unknown environment: {env_name}")
 '''
-#simple test for frozenlake_env
 from envs.frozenlake_env import FrozenLakeEnv
 from envs.gridworld_env import GridWorldEnv
-from envs.metaworld_reach_env import MetaWorldBenchmarkEnv
 from envs.sparse_cartpole_env import SparseCartPoleEnv
 
 def make_env(env_name: str, **kwargs):
@@ -42,9 +40,10 @@ def make_env(env_name: str, **kwargs):
         return FrozenLakeEnv(**kwargs)
     elif env_name == "gridworld":
         return GridWorldEnv(**kwargs)
-    elif env_name == "metaworld":
-        return MetaWorldBenchmarkEnv(**kwargs)
     elif env_name == "cartpole":
         return SparseCartPoleEnv(**kwargs)
+    elif env_name == "metaworld":
+        from envs.metaworld_reach_env import MetaWorldBenchmarkEnv
+        return MetaWorldBenchmarkEnv(**kwargs)
     else:
         raise ValueError(f"Unknown environment: {env_name}")

@@ -48,5 +48,8 @@ class SparseCartPoleEnv(BaseBenchmarkEnv):
             return bool(info["success"])
         return False
 
+    def render(self):
+        pass
+
     def close(self):
         self.env.close()
