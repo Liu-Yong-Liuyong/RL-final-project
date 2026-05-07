@@ -1,11 +1,15 @@
+seed: 42
+
 env:
   name: cartpole
   kwargs: {}
 
 wrappers:
   sparse_reward:
-    enabled: false   # CartPole already uses sparse reward natively in SparseCartPoleEnv
-    kwargs: {}
+    enabled: true
+    kwargs:
+      success_reward: 10.0
+      failure_reward: 0.0
 
   # ---------------------------------------------------------------
   # Exploration variants — uncomment ONE block at a time.
@@ -60,9 +64,9 @@ wrappers:
 
 # ---------------------------------------------------------------
 # Agent kwargs — change ent_coef to switch between:
-#   Vanilla PPO           → ent_coef: 0.0
+#   Vanilla PPO            → ent_coef: 0.0
 #   Entropy Regularization → ent_coef: 0.1
-#   ICM / RND             → ent_coef: 0.01
+#   ICM / RND              → ent_coef: 0.01
 # ---------------------------------------------------------------
 agent:
   name: ppo
@@ -75,6 +79,7 @@ agent:
 
 train:
   total_timesteps: 200000
+  ewma_max_steps: 500    # CartPole truncates at 500 steps — must match for EWMA to detect success
 
 output:
   #save_path: "checkpoints/ppo_cartpole_sparse"           # [1] Vanilla PPO
