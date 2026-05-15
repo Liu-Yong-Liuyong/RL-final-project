@@ -32,7 +32,6 @@ class GridWorldEnv(BaseBenchmarkEnv):
         self.ax = None
         self.img_plot = None
 
-        # 🌟 關鍵：在 __init__ 中就決定好這個環境的「唯一固定地形」
         self._generate_fixed_map()
 
     def _get_random_pos(self, exclude_set):

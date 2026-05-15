@@ -65,6 +65,7 @@ def main():
     wrappers_cfg = config.get("wrappers", {})
 
     env = build_env_from_config(config)
+    # env = gym.wrappers.TimeLimit(env, max_episode_steps=100)
     env.reset(seed=seed)
 
     callback_list = []

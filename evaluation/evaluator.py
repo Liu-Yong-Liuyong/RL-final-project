@@ -23,7 +23,7 @@ def run_one_episode(env, agent, max_steps=1000):
     """
     obs, info = env.reset()
 
-    env.render()
+    # env.render()
 
     episode_return = 0.0
     visited_ids = set()
@@ -37,7 +37,7 @@ def run_one_episode(env, agent, max_steps=1000):
         action = agent.predict(obs)
         obs, reward, terminated, truncated, info = env.step(action)
 
-        env.render()
+        # env.render()
 
         episode_return += float(reward)
         visited_ids.add(info["coverage_id"])
