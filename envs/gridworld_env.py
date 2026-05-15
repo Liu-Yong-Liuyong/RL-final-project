@@ -6,7 +6,7 @@ import random
 from envs.base_env import BaseBenchmarkEnv
 
 class GridWorldEnv(BaseBenchmarkEnv):
-    def __init__(self, width=10, height=10, start_pos=(0, 0), goal_pos=(9, 9), num_obstacles=0, random_seed=42):
+    def __init__(self, width=10, height=10, start_pos=(0, 0), goal_pos=(9, 9), num_obstacles=0, random_seed=42, max_steps=100):
         super().__init__(task_name="SparseGridWorld")
         self.width = width
         self.height = height
@@ -27,6 +27,9 @@ class GridWorldEnv(BaseBenchmarkEnv):
         self.goal_pos = (9, 9)
         self.obstacles = set()
         self.current_pos = [0, 0]
+
+        self.max_steps = max_steps
+        self.current_step = 0
 
         self.fig = None
         self.ax = None
@@ -65,6 +68,8 @@ class GridWorldEnv(BaseBenchmarkEnv):
         super().reset(seed=seed)
         
         self.current_pos = list(self.start_pos)
+
+        self.current_step = 0
         
         obs = np.array(self.current_pos, dtype=np.int32)
         info = {"success": False}
@@ -72,6 +77,8 @@ class GridWorldEnv(BaseBenchmarkEnv):
         return obs, info
 
     def step(self, action):
+        self.current_step += 1
+
         x, y = self.current_pos
         old_pos = (x, y)
         
@@ -90,7 +97,7 @@ class GridWorldEnv(BaseBenchmarkEnv):
         
         terminated = tuple(self.current_pos) == self.goal_pos
         reward = 1.0 if terminated else 0.0
-        truncated = False
+        truncated = self.current_step >= self.max_steps
         
         info = {"success": terminated}
         info = self.build_info(obs, info)
