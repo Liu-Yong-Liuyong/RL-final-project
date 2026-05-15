@@ -225,8 +225,8 @@ class RNDRewardWrapper(gym.Wrapper):
 
     def _normalize_intrinsic_reward(self, x):
         self._update_running_stats(x)
-        std = (self.int_reward_var / self.int_reward_count) ** 0.5
-        return x / (std + 1e-8)
+        std = float((self.int_reward_var / self.int_reward_count) ** 0.5)
+        return float(x) / (std + 1e-8)
 
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
@@ -238,7 +238,7 @@ class RNDRewardWrapper(gym.Wrapper):
         intrinsic_reward = float(self.rnd_module.compute_intrinsic_reward(next_obs))
         normalized_intrinsic_reward = self._normalize_intrinsic_reward(intrinsic_reward)#do the normalization makes it better
 
-        total_reward = extrinsic_reward + self.reward_scale * normalized_intrinsic_reward
+        total_reward = float(extrinsic_reward) + self.reward_scale * float(normalized_intrinsic_reward)
 
         self.obs_buffer.append(next_obs)
 

@@ -1,1 +1,85 @@
+seed: 42
 
+env:
+  name: cartpole
+  kwargs:
+    target_x: 1.5
+
+wrappers:
+  sparse_reward:
+    enabled: true
+    kwargs:
+      success_reward: 10.0
+      failure_reward: 0.0
+
+  # [1] Entropy Regularization (baseline — set ent_coef: 0.1 in agent kwargs)
+  # exploration:
+  #   enabled: false
+  #   method: null
+  #   kwargs: {}
+
+  # [2] Count-based
+  # exploration:
+  #   enabled: true
+  #   method: intrinsic_count
+  #   kwargs:
+  #     bonus_coef: 0.05
+
+  # [3] ICM
+  exploration:
+    enabled: true
+    method: icm
+    kwargs:
+      reward_scale: 0.001
+      icm_lr: 0.0003
+      beta: 0.2
+      update_freq: 1000
+      feature_dim: 64
+      hidden_dim: 128
+      device: "cpu"
+      clip_intrinsic: 5.0
+
+  # [4] RND
+  # exploration:
+  #   enabled: true
+  #   method: rnd
+  #   kwargs:
+  #     reward_scale: 0.001
+  #     rnd_lr: 0.001
+  #     update_freq: 1000
+  #     feature_dim: 64
+  #     hidden_dim: 128
+  #     device: "cpu"
+
+agent:
+  name: ppo
+  kwargs:
+    policy: "MlpPolicy"
+    learning_rate: 0.0003
+    gamma: 0.99
+    ent_coef: 0.1
+    verbose: 1
+
+train:
+  total_timesteps: 200000
+  ewma_max_steps: 500
+
+output:
+  # save_path: "checkpoints/ppo_cartpole_sparse_entropy"   # [1] Entropy Reg
+  # save_path: "checkpoints/ppo_cartpole_sparse_count"    # [2] Count
+  save_path: "checkpoints/ppo_cartpole_sparse_icm"      # [3] ICM
+  # save_path: "checkpoints/ppo_cartpole_sparse_rnd"      # [4] RND
+
+eval:
+  num_episodes: 20
+  max_steps: 500
+  # model_path: "checkpoints/ppo_cartpole_sparse_entropy.zip"
+  # model_path: "checkpoints/ppo_cartpole_sparse_count.zip"
+  model_path: "checkpoints/ppo_cartpole_sparse_icm.zip"
+  # model_path: "checkpoints/ppo_cartpole_sparse_rnd.zip"
+
+wandb:
+  enabled: false
+  project: "rl-exploration-benchmark"
+  name: "cartpole-entropy"
+  tags: ["cartpole", "entropy"]

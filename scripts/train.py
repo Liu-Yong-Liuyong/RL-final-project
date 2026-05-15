@@ -1,5 +1,7 @@
 import argparse
+import random
 import yaml
+import numpy as np
 import torch
 import gymnasium as gym
 import random
@@ -18,6 +20,14 @@ from algorithms.rnd_module import RNDModule
 from algorithms.icm_callback import ICMUpdateCallback
 from algorithms.rnd_callback import RNDUpdateCallback
 from stable_baselines3.common.callbacks import CallbackList
+
+
+def set_global_seeds(seed: int):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 
 def load_config(config_path: str) -> dict:
@@ -54,12 +64,20 @@ def main():
     config = load_config(args.config)
 
     seed = config.get("seed", 42)
+    set_global_seeds(seed)
 
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
+    wandb_cfg = config.get("wandb", {})
+    if wandb_cfg.get("enabled", False):
+        try:
+            import wandb
+            wandb.init(
+                project=wandb_cfg.get("project", "rl-exploration-benchmark"),
+                name=wandb_cfg.get("name", None),
+                tags=wandb_cfg.get("tags", []),
+                config=config,
+            )
+        except ImportError:
+            print("[WARNING] wandb not installed — skipping wandb logging. Run: pip install wandb")
 
     env_cfg = config["env"]
     wrappers_cfg = config.get("wrappers", {})
@@ -170,7 +188,7 @@ def main():
         eval_env=eval_env,
         eval_freq=5000,
         num_eval_episodes=20,
-        max_steps=200,
+        max_steps=train_cfg.get("ewma_max_steps", 200),
         alpha=0.3,
         success_threshold=0.8,
         verbose=1,
@@ -190,6 +208,7 @@ def main():
         save_path=output_cfg["save_path"],
         ppo_kwargs=agent_cfg.get("kwargs", {}),
         callback=callback,
+        seed=seed,
     )
 
 
