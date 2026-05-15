@@ -1,11 +1,9 @@
 import gymnasium as gym
 import metaworld
 import numpy as np
-
 from envs.base_env import BaseBenchmarkEnv
 
-
-class MetaWorldReachEnv(BaseBenchmarkEnv):
+class MetaWorldButtonEnv(BaseBenchmarkEnv):
     def __init__(self, task_name, render_mode=None):
         super().__init__(task_name=task_name)
 
@@ -26,8 +24,8 @@ class MetaWorldReachEnv(BaseBenchmarkEnv):
 
     def get_coverage_id(self, obs):
         obs = np.asarray(obs)
-        pos = obs[:3]
-        bins = np.round(pos, 1)
+        hand_pos = obs[:3]  # obs[:3] is the position of the end effector of the robotic arm
+        bins = np.round(hand_pos, 1)
         return tuple(bins.tolist())
 
     def is_success(self, obs, info=None) -> bool:

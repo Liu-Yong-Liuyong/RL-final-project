@@ -13,6 +13,7 @@ class EWMASuccessCallback(BaseCallback):
         alpha=0.3,
         success_threshold=0.8,
         verbose=1,
+        best_model_save_path = None,
     ):
         super().__init__(verbose)
         self.eval_env = eval_env
@@ -24,6 +25,9 @@ class EWMASuccessCallback(BaseCallback):
 
         self.ewma_success_rate = None
         self.eval_history = []
+
+        self.best_ewma_success_rate = -1.0
+        self.best_model_save_path = best_model_save_path
 
     def _on_step(self) -> bool:
         if self.n_calls % self.eval_freq != 0:
@@ -49,6 +53,13 @@ class EWMASuccessCallback(BaseCallback):
                 + (1 - self.alpha) * self.ewma_success_rate
             )
 
+        if self.best_model_save_path is not None and self.ewma_success_rate > self.best_ewma_success_rate:
+            self.best_ewma_success_rate = self.ewma_success_rate
+            save_path = self.best_model_save_path
+            self.model.save(save_path)
+            if self.verbose > 0:
+                print(f"[Best Save] New best success rate: {self.best_ewma_success_rate:.3f}! Model saved.")
+
         if self.verbose > 0:
             print(
                 f"[Eval] steps={self.num_timesteps}, "
@@ -68,7 +79,6 @@ class EWMASuccessCallback(BaseCallback):
                         "eval/avg_return": results["avg_return"],
                         "eval/avg_coverage_count": results["avg_coverage_count"],
                     },
-                    step=self.num_timesteps,
                 )
         except ImportError:
             pass

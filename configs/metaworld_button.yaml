@@ -1,0 +1,55 @@
+env:
+  name: metaworld
+  kwargs:
+    task_name: "button-press-v3"
+    render_mode: null
+
+wrappers:
+  sparse_reward:
+    enabled: true
+    kwargs:
+      success_reward: 10.0
+      failure_reward: 0.0
+      dense_scale: 0.00001
+
+  exploration:
+    enabled: true
+    method: icm
+    kwargs:
+      reward_scale: 0.001
+      icm_lr: 0.0003
+      beta: 0.5
+      update_freq: 1000
+      feature_dim: 64
+      hidden_dim: 128
+      device: "cpu"
+      clip_intrinsic: 5.0
+
+agent:
+  name: ppo
+  kwargs:
+    policy: "MlpPolicy"
+    learning_rate: 0.0001
+    gamma: 0.99
+    ent_coef: 0.01
+    verbose: 0
+    device: "cpu"
+    tensorboard_log: "./wandb/logs"
+
+train:
+  total_timesteps: 3000000
+
+output:
+  save_path: "checkpoints/ppo_metaworld_button_sparse_icm"
+  best_save_path: "checkpoints/ppo_metaworld_button_sparse_icm_best"
+
+eval:
+  num_episodes: 100
+  max_steps: 500
+  model_path: "checkpoints/ppo_metaworld_button_sparse_icm_best.zip"
+
+wandb:
+  enabled: true
+  project: "rl-exploration-benchmark"
+  name: "ppo-icm-button-press"
+  tags: ["metaworld_button", "sparse", "icm"]

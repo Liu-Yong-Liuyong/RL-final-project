@@ -32,4 +32,15 @@ class RNDUpdateCallback(BaseCallback):
                 f"rnd_loss={loss_dict['rnd_loss'].item():.4f}"
             )
 
+        try:
+            import wandb
+            if wandb.run is not None:
+                wandb.log(
+                    {
+                        "rnd/rnd_loss": loss_dict['rnd_loss'].item(),
+                    },
+                )
+        except ImportError:
+            pass
+
         return True

@@ -75,5 +75,18 @@ class ICMUpdateCallback(BaseCallback):
                 f"forward_loss={loss_dict['forward_loss']:.4f}"
             )
 
+        try:
+            import wandb
+            if wandb.run is not None:
+                wandb.log(
+                    {
+                        "icm/icm_loss": loss_dict['icm_loss'].item(),
+                        "icm/inverse_loss": loss_dict['inverse_loss'],
+                        "icm/forward_loss": loss_dict['forward_loss'],
+                    },
+                )
+        except ImportError:
+            pass
+
         return True
 

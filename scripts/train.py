@@ -20,6 +20,7 @@ from algorithms.rnd_module import RNDModule
 from algorithms.icm_callback import ICMUpdateCallback
 from algorithms.rnd_callback import RNDUpdateCallback
 from stable_baselines3.common.callbacks import CallbackList
+from wandb.integration.sb3 import WandbCallback
 
 
 def set_global_seeds(seed: int):
@@ -65,19 +66,6 @@ def main():
 
     seed = config.get("seed", 42)
     set_global_seeds(seed)
-
-    wandb_cfg = config.get("wandb", {})
-    if wandb_cfg.get("enabled", False):
-        try:
-            import wandb
-            wandb.init(
-                project=wandb_cfg.get("project", "rl-exploration-benchmark"),
-                name=wandb_cfg.get("name", None),
-                tags=wandb_cfg.get("tags", []),
-                config=config,
-            )
-        except ImportError:
-            print("[WARNING] wandb not installed — skipping wandb logging. Run: pip install wandb")
 
     env_cfg = config["env"]
     wrappers_cfg = config.get("wrappers", {})
@@ -180,6 +168,24 @@ def main():
     if agent_cfg["name"].lower() != "ppo":
         raise ValueError(f"Unsupported agent: {agent_cfg['name']}")
 
+    wandb_cfg = config.get("wandb", {})
+    if wandb_cfg.get("enabled", False):
+        try:
+            import wandb
+            run = wandb.init(
+                project=wandb_cfg.get("project", "rl-exploration-benchmark"),
+                name=wandb_cfg.get("name", None),
+                tags=wandb_cfg.get("tags", []),
+                config=config,
+                sync_tensorboard=True,
+            )
+            wandb.define_metric("global_step") 
+            wandb.define_metric("*", step_metric="global_step")
+            agent_cfg["kwargs"]["tensorboard_log"] = run.dir
+            callback_list.append(WandbCallback(verbose=2))
+        except ImportError:
+            print("[WARNING] wandb not installed — skipping wandb logging. Run: pip install wandb")
+
     eval_env = build_env_from_config(config)
     eval_env.reset(seed=seed)
 
@@ -191,6 +197,7 @@ def main():
         alpha=0.3,
         success_threshold=0.8,
         verbose=1,
+        best_model_save_path=output_cfg["best_save_path"]
     )
     callback_list.append(ewma_callback)
 
