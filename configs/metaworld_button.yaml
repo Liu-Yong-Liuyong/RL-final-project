@@ -7,6 +7,7 @@ env:
 wrappers:
   sparse_reward:
     enabled: true
+    type: "basic"
     kwargs:
       success_reward: 10.0
       failure_reward: 0.0

@@ -4,6 +4,8 @@ env:
   kwargs:
     map_name: "8x8"
     is_slippery: true
+    #render_mode: "human"
+    #render_mode: null
 
 seed: 42
 
@@ -12,27 +14,27 @@ wrappers:
     enabled: false
     kwargs: {}
 
-  #exploration:
-    #enabled: true
-    #method: intrinsic_count
-    #kwargs:
-      #bonus_coef: 0.05
+  exploration:
+    enabled: true
+    method: intrinsic_count
+    kwargs:
+      bonus_coef: 0.05
   #exploration:
     #enabled: false
     #method: null
     #kwargs: {}
-  exploration:
-    enabled: true
-    method: icm
-    kwargs:
-      reward_scale: 0.001
-      icm_lr: 0.001
-      beta: 0.2
-      update_freq: 1000
-      feature_dim: 64
-      hidden_dim: 128
-      device: "cpu"
-      clip_intrinsic: null
+  #exploration:
+    #enabled: true
+    #method: icm
+    #kwargs:
+      #reward_scale: 0.001
+      #icm_lr: 0.001
+      #beta: 0.2
+      #update_freq: 1000
+      #feature_dim: 64
+      #hidden_dim: 128
+      #device: "cpu"
+      #clip_intrinsic: null
   #exploration:
     #enabled: true
     #method: rnd
@@ -50,7 +52,7 @@ agent:
     policy: "MlpPolicy"
     learning_rate: 0.0003
     gamma: 0.99
-    ent_coef: 0.01
+    ent_coef: 0.0
     verbose: 1
 
 train:
@@ -59,15 +61,15 @@ train:
 output:
   #save_path: "checkpoints/ppo_frozenlake_medium"
   #save_path: "checkpoints/ppo_frozenlake_medium_entcoef"
-  #save_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic"
-  save_path: "checkpoints/ppo_frozenlake_medium_icm"
+  save_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic"
+  #save_path: "checkpoints/ppo_frozenlake_medium_icm"
   #save_path: "checkpoints/ppo_frozenlake_medium_rnd"
 
 eval:
-  num_episodes: 100
+  num_episodes: 1000
   max_steps: 500
   #model_path: "checkpoints/ppo_frozenlake_medium.zip"
   #model_path: "checkpoints/ppo_frozenlake_medium_entcoef.zip"
-  #model_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic.zip"
-  model_path: "checkpoints/ppo_frozenlake_medium_icm.zip"
+  model_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic.zip"
+  #model_path: "checkpoints/ppo_frozenlake_medium_icm.zip"
   #model_path: "checkpoints/ppo_frozenlake_medium_rnd.zip"

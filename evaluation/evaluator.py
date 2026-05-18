@@ -22,6 +22,7 @@ def run_one_episode(env, agent, max_steps=1000):
         dict with episode_return, success, visited_ids, coverage_count
     """
     obs, info = env.reset()
+    #env.render()#
 
     # env.render()
 
@@ -36,6 +37,7 @@ def run_one_episode(env, agent, max_steps=1000):
     while not done and steps < max_steps:
         action = agent.predict(obs)
         obs, reward, terminated, truncated, info = env.step(action)
+        #env.render() #
 
         # env.render()
 

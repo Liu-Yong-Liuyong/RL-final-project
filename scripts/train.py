@@ -1,3 +1,4 @@
+
 import argparse
 import random
 import yaml
@@ -12,6 +13,7 @@ from algorithms.run_ppo import run_ppo
 from algorithms.callbacks import EWMASuccessCallback
 
 from wrappers.sparse_reward_wrappers import SparseRewardWrapper
+from wrappers.sparse_reward_wrappers import GoalThresholdRewardWrapper #trying
 from wrappers.exploration_wrapper import IntrinsicRewardWrapper
 from wrappers.exploration_wrapper import CuriosityRewardWrapper
 from wrappers.exploration_wrapper import RNDRewardWrapper
@@ -22,14 +24,12 @@ from algorithms.rnd_callback import RNDUpdateCallback
 from stable_baselines3.common.callbacks import CallbackList
 from wandb.integration.sb3 import WandbCallback
 
-
 def set_global_seeds(seed: int):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
-
 
 def load_config(config_path: str) -> dict:
     with open(config_path, "r", encoding="utf-8") as f:
@@ -47,10 +47,17 @@ def build_env_from_config(config: dict):
 
     sparse_cfg = wrappers_cfg.get("sparse_reward", {})
     if sparse_cfg.get("enabled", False):
-        env = SparseRewardWrapper(env, **sparse_cfg.get("kwargs", {}))
+        sparse_type = sparse_cfg.get("type", "basic")
+        sparse_kwargs = sparse_cfg.get("kwargs", {})
+
+        if sparse_type == "basic":
+            env = SparseRewardWrapper(env, **sparse_kwargs)
+        elif sparse_type == "goal_threshold":
+            env = GoalThresholdRewardWrapper(env, **sparse_kwargs)
+        else:
+            raise ValueError(f"Unknown sparse reward wrapper type: {sparse_type}")
 
     return env
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -167,7 +174,8 @@ def main():
 
     if agent_cfg["name"].lower() != "ppo":
         raise ValueError(f"Unsupported agent: {agent_cfg['name']}")
-
+    
+    #add wandb
     wandb_cfg = config.get("wandb", {})
     if wandb_cfg.get("enabled", False):
         try:
@@ -185,7 +193,7 @@ def main():
             callback_list.append(WandbCallback(verbose=2))
         except ImportError:
             print("[WARNING] wandb not installed — skipping wandb logging. Run: pip install wandb")
-
+            
     eval_env = build_env_from_config(config)
     eval_env.reset(seed=seed)
 

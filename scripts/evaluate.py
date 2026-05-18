@@ -5,13 +5,14 @@ from scripts.make_env import make_env
 from scripts.make_agent import make_agent
 from evaluation.evaluator import evaluate_agent
 from wrappers.sparse_reward_wrappers import SparseRewardWrapper
+from wrappers.sparse_reward_wrappers import GoalThresholdRewardWrapper #trying
 
 
 def load_config(config_path: str) -> dict:
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
-
+'''
 def build_env_from_config(config: dict, for_eval: bool = True):
     env_cfg = config["env"]
     env = make_env(
@@ -24,10 +25,32 @@ def build_env_from_config(config: dict, for_eval: bool = True):
     sparse_cfg = wrappers_cfg.get("sparse_reward", {})
     if sparse_cfg.get("enabled", False):
         env = SparseRewardWrapper(env, **sparse_cfg.get("kwargs", {}))
-
+        #env = GoalThresholdRewardWrapper(env, **sparse_cfg.get("kwargs", {}))
     # evaluation 時通常不要再套 exploration wrapper
     return env
+'''
+def build_env_from_config(config: dict, for_eval: bool = True):
+    env_cfg = config["env"]
+    wrappers_cfg = config.get("wrappers", {})
 
+    env = make_env(
+        env_name=env_cfg["name"],
+        **env_cfg.get("kwargs", {})
+    )
+
+    sparse_cfg = wrappers_cfg.get("sparse_reward", {})
+    if sparse_cfg.get("enabled", False):
+        sparse_type = sparse_cfg.get("type", "basic")
+        sparse_kwargs = sparse_cfg.get("kwargs", {})
+
+        if sparse_type == "basic":
+            env = SparseRewardWrapper(env, **sparse_kwargs)
+        elif sparse_type == "goal_threshold":
+            env = GoalThresholdRewardWrapper(env, **sparse_kwargs)
+        else:
+            raise ValueError(f"Unknown sparse reward wrapper type: {sparse_type}")
+
+    return env
 
 def main():
     parser = argparse.ArgumentParser()

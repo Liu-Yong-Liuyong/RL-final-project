@@ -17,13 +17,12 @@ class MetaWorldReachEnv(BaseBenchmarkEnv):
         obs, info = self.env.reset(seed=seed, options=options)
         info = self.build_info(obs, info)
         return obs, info
-
+    
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
         info["dense_reward"] = reward
         info = self.build_info(obs, info)
-        return obs, reward, terminated, truncated, info
-
+        return obs, reward, terminated, truncated, info 
     def get_coverage_id(self, obs):
         obs = np.asarray(obs)
         pos = obs[:3]
