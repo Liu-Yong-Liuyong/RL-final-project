@@ -5,7 +5,7 @@ import numpy as np
 from envs.base_env import BaseBenchmarkEnv
 
 
-class MetaWorldBenchmarkEnv(BaseBenchmarkEnv):
+class MetaWorldReachEnv(BaseBenchmarkEnv):
     def __init__(self, task_name, render_mode=None):
         super().__init__(task_name=task_name)
 
@@ -17,13 +17,12 @@ class MetaWorldBenchmarkEnv(BaseBenchmarkEnv):
         obs, info = self.env.reset(seed=seed, options=options)
         info = self.build_info(obs, info)
         return obs, info
-
+    
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
         info["dense_reward"] = reward
         info = self.build_info(obs, info)
-        return obs, reward, terminated, truncated, info
-
+        return obs, reward, terminated, truncated, info 
     def get_coverage_id(self, obs):
         obs = np.asarray(obs)
         pos = obs[:3]
