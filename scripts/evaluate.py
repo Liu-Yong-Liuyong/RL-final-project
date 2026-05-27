@@ -6,6 +6,7 @@ from scripts.make_agent import make_agent
 from evaluation.evaluator import evaluate_agent
 from wrappers.sparse_reward_wrappers import SparseRewardWrapper
 from wrappers.sparse_reward_wrappers import GoalThresholdRewardWrapper #trying
+from wrappers.sparse_reward_wrappers import PickPlaceMilestoneRewardWrapper #trying
 
 
 def load_config(config_path: str) -> dict:
@@ -47,6 +48,8 @@ def build_env_from_config(config: dict, for_eval: bool = True):
             env = SparseRewardWrapper(env, **sparse_kwargs)
         elif sparse_type == "goal_threshold":
             env = GoalThresholdRewardWrapper(env, **sparse_kwargs)
+        elif sparse_type == "pick_place_milestone":
+            env = PickPlaceMilestoneRewardWrapper(env, **sparse_kwargs)
         else:
             raise ValueError(f"Unknown sparse reward wrapper type: {sparse_type}")
 

@@ -5,6 +5,9 @@ env:
     render_mode: null
 
 wrappers:
+  #sparse_reward:
+    #enabled: false
+    #kwargs: {}
   sparse_reward:
     enabled: true
     type: "goal_threshold"
@@ -16,17 +19,17 @@ wrappers:
         - [0.03, 0.5]
       failure_reward: 0.0
       use_dense_fallback: true
-      dense_coef: 0.005 #0.005
+      dense_coef: 0.0 #0.005
 
   #exploration:
     #enabled: false
     #method: null
     #kwargs: {}
-  exploration:
-    enabled: true
-    method: intrinsic_count
-    kwargs:
-      bonus_coef: 0.05
+  #exploration:
+    #enabled: true
+    #method: intrinsic_count
+    #kwargs:
+      #bonus_coef: 0.05
   #exploration:
     #enabled: true
     #method: icm
@@ -39,50 +42,55 @@ wrappers:
       #hidden_dim: 128
       #device: "cpu"
       #clip_intrinsic: 1.0
+  exploration:
+    enabled: true
+    method: rnd
+    kwargs:
+      reward_scale: 0.00005
+      rnd_lr: 0.0003
+      update_freq: 2000
+      feature_dim: 64
+      hidden_dim: 128
+      device: "cpu"
   #exploration:
     #enabled: true
-    #method: rnd
-    #kwargs:
-      #reward_scale: 0.00005
-      #rnd_lr: 0.0003
-      #update_freq: 2000
-      #feature_dim: 64
-      #hidden_dim: 128
-      #device: "cpu"
+    #method: logging_only
+    #kwargs: {}
 
 agent:
   name: ppo
   kwargs:
     policy: "MlpPolicy"
-    learning_rate: 0.0002
+    learning_rate: 0.0002 #0.0002
     gamma: 0.99
     ent_coef: 0.005
     verbose: 1
+    tensorboard_log: "./wandb/logs"
 
 train:
-  total_timesteps: 600000
+  total_timesteps: 600000 #600000
 
 output:
-  #save_path: "checkpoints/ppo_metaworld_reach_sparse_icm"
-  #save_path: "checkpoints/ppo_metaworld_reach_sparse"
-  #save_path: "checkpoints/ppo_metaworld_reach_sparse_rnd"
-  save_path: "checkpoints/ppo_metaworld_reach_sparse_counted"
-  #best_save_path: "checkpoints/ppo_metaworld_reach_sparse_icm_best"
-  #best_save_path: "checkpoints/ppo_metaworld_reach_sparse_best"
-  #best_save_path: "checkpoints/ppo_metaworld_reach_sparse_rnd_best"
-  best_save_path: "checkpoints/ppo_metaworld_reach_sparse_counted_best"
+  #save_path: "checkpoints/ppo_metaworld_reach_sparse_icm_dc0"
+  #save_path: "checkpoints/ppo_metaworld_reach_sparse_dc0"
+  save_path: "checkpoints/ppo_metaworld_reach_sparse_rnd_dc0"
+  #save_path: "checkpoints/ppo_metaworld_reach_sparse_counted"
+  #best_save_path: "checkpoints/ppo_metaworld_reach_sparse_icm_dc0_best"
+  #best_save_path: "checkpoints/ppo_metaworld_reach_sparse_dc0_best"
+  best_save_path: "checkpoints/ppo_metaworld_reach_sparse_rnd_dc0_best"
+  #best_save_path: "checkpoints/ppo_metaworld_reach_sparse_counted_best"
 
 
 eval:
   num_episodes: 100
   max_steps: 500
-  #model_path: "checkpoints/ppo_metaworld_reach_sparse_icm_best.zip"
-  #model_path: "checkpoints/ppo_metaworld_reach_sparse_best.zip"
-  #model_path: "checkpoints/ppo_metaworld_reach_sparse_rnd_best.zip"
-  model_path: "checkpoints/ppo_metaworld_reach_sparse_counted_best.zip"
+  #model_path: "checkpoints/ppo_metaworld_reach_sparse_icm_dc0_best.zip"
+  #model_path: "checkpoints/ppo_metaworld_reach_sparse_dc0_best.zip"
+  model_path: "checkpoints/ppo_metaworld_reach_sparse_rnd_dc0_best.zip"
+  #model_path: "checkpoints/ppo_metaworld_reach_sparse_counted_best.zip"
 
 wandb:
   enabled: true
   project: "rl-exploration-benchmark"
-  name: "ppo-icm-reach-v3-counted"
-  tags: ["metaworld_reach-v3", "sparse", "counted_based"]
+  name: "ppo-rnd-reach-v3-dc0"
+  tags: ["metaworld_reach-v3", "sparse", "rnd_dc0"]
