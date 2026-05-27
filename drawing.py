@@ -133,9 +133,18 @@ def plot_visit_heatmap_from_json(
 
     #plt.tight_layout()
     #plt.show()
+    '''
     plt.tight_layout()
     plt.savefig("rnd_dc0_reach_heatmap_yz.png", dpi=200)
-    print("saved to reach_heatmap.png")
+    '''
+    save_dir = "exploration_pictures"
+    os.makedirs(save_dir, exist_ok=True)
+
+    save_path = os.path.join(save_dir, "rnd_dc0_reach_heatmap_yz.png")
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=200)
+    print(f"saved to {save_path}")
 
 def main():
     '''
