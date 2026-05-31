@@ -17,10 +17,18 @@ class ExplorationLoggingWrapper(gym.Wrapper):
         obs, reward, terminated, truncated, info = self.env.step(action)
 
         self.global_step += 1
+
+        unwrapped_env = self.env.unwrapped
+        if hasattr(unwrapped_env, "goal_pos"):
+            target_pos = list(unwrapped_env.goal_pos)
+        elif hasattr(unwrapped_env, "get_target_pos"):
+            target_pos = unwrapped_env.get_target_pos().tolist()
+        else:
+            target_pos = None
         self.exploration_log.append({
             "coverage_id": info.get("coverage_id"),
             "global_step": self.global_step,
-            "target_pos": self.env.unwrapped.get_target_pos().tolist(),## for metaworld
+            "target_pos": target_pos,
             #"goal_state": int(self.env.get_goal_state()),
             "method": "ppo",
         })
@@ -139,9 +147,17 @@ class CuriosityRewardWrapper(gym.Wrapper):
         info["intrinsic_reward"] = float(processed_intrinsic_reward)
         info["total_reward"] = float(total_reward)
         ########################################### for 2d drawing
+        unwrapped_env = self.env.unwrapped
+        if hasattr(unwrapped_env, "goal_pos"):
+            target_pos = list(unwrapped_env.goal_pos)
+        elif hasattr(unwrapped_env, "get_target_pos"):
+            target_pos = unwrapped_env.get_target_pos().tolist()
+        else:
+            target_pos = None
+
         self.exploration_log.append({
             "coverage_id": info.get("coverage_id"),
-            "target_pos": self.env.unwrapped.get_target_pos().tolist(),## for metaworld
+            "target_pos": target_pos,
             #"goal_state": int(self.env.get_goal_state()),
             "intrinsic_reward": float(processed_intrinsic_reward),
         })
@@ -207,9 +223,17 @@ class RNDRewardWrapper(gym.Wrapper):
         info["intrinsic_reward"] = float(normalized_intrinsic_reward)
         info["total_reward"] = float(total_reward)
         ########################################### for 2d drawing
+        unwrapped_env = self.env.unwrapped
+        if hasattr(unwrapped_env, "goal_pos"):
+            target_pos = list(unwrapped_env.goal_pos)
+        elif hasattr(unwrapped_env, "get_target_pos"):
+            target_pos = unwrapped_env.get_target_pos().tolist()
+        else:
+            target_pos = None
+
         self.exploration_log.append({
             "coverage_id": info.get("coverage_id"),
-            "target_pos": self.env.unwrapped.get_target_pos().tolist(),## for metaworld
+            "target_pos": target_pos,
             #"goal_state": int(self.env.get_goal_state()),
             "intrinsic_reward": float(normalized_intrinsic_reward),
         })

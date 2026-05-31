@@ -21,18 +21,18 @@ wrappers:
   #     method: intrinsic_count
   #     kwargs:
   #       bonus_coef: 0.001
-  # exploration:
-  #   enabled: true
-  #   method: icm
-  #   kwargs:
-  #     reward_scale: 0.01
-  #     icm_lr: 0.0005
-  #     beta: 0.2
-  #     update_freq: 1000
-  #     feature_dim: 32
-  #     hidden_dim: 64
-  #     device: "cpu"
-  #     clip_intrinsic: 0.1
+  exploration:
+    enabled: true
+    method: icm
+    kwargs:
+      reward_scale: 0.01
+      icm_lr: 0.0005
+      beta: 0.2
+      update_freq: 1000
+      feature_dim: 32
+      hidden_dim: 64
+      device: "cpu"
+      clip_intrinsic: 0.1
   # exploration:
   #   enabled: true
   #   method: rnd
@@ -51,16 +51,16 @@ agent:
     learning_rate: 0.0001
     gamma: 0.99
     ent_coef: 0.1
-    verbose: 1
+    verbose: 0
 
 train:
   total_timesteps: 500000
 
 output:
   # save_path: "checkpoints/ppo_gridworld_easy"
-  save_path: "checkpoints/ppo_gridworld_easy_entcoef"
+  # save_path: "checkpoints/ppo_gridworld_easy_entcoef"
   # save_path: "checkpoints/ppo_gridworld_easy_count_intrinsic"
-  # save_path: "checkpoints/ppo_gridworld_easy_icm"
+  save_path: "checkpoints/ppo_gridworld_easy_icm"
   # save_path: "checkpoints/ppo_gridworld_easy_rnd"
   # save_path: "checkpoints/ppo_gridworld_easy_timelimit"
   # save_path: "checkpoints/ppo_gridworld_easy_entcoef_timelimit"
@@ -68,14 +68,16 @@ output:
   # save_path: "checkpoints/ppo_gridworld_easy_icm_timelimit"
   # save_path: "checkpoints/ppo_gridworld_easy_rnd_timelimit"
 
+  # best_save_path: "checkpoints/ppo_gridworld_easy_entcoef_best"
+  best_save_path: "checkpoints/ppo_gridworld_easy_icm_best"
 
 eval:
   num_episodes: 5
   max_steps: 50
   # model_path: "checkpoints/ppo_gridworld_easy.zip"
-  model_path: "checkpoints/ppo_gridworld_easy_entcoef.zip"
+  # model_path: "checkpoints/ppo_gridworld_easy_entcoef.zip"
   # model_path: "checkpoints/ppo_gridworld_easy_count_intrinsic.zip"
-  # model_path: "checkpoints/ppo_gridworld_easy_icm.zip"
+  model_path: "checkpoints/ppo_gridworld_easy_icm.zip"
   # model_path: "checkpoints/ppo_gridworld_easy_rnd.zip"
   # model_path: "checkpoints/ppo_gridworld_easy_timelimit.zip"
   # model_path: "checkpoints/ppo_gridworld_easy_entcoef_timelimit.zip"
