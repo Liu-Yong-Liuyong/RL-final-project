@@ -1,3 +1,4 @@
-# RL-final-project
-python -m scripts.train --config configs\frozenlake_medium.yaml  
-python -m scripts.evaluate --config configs\frozenlake_medium.yaml
+我修改了icm_wrapper(rnd_wrapper)跟icm_callbacks(rnd_callbacks)，其中icm_callbacks(rnd_callbacks)裡面有需要改成你的log檔名的地方。
+另外為了讓圖上面有target position，所以env中要加一個get_target_pos();
+還有為了讓純ppo也可以畫圖，我弄了一wrapper在explorationwrapper裡面，主要是紀錄用的，而真正把紀錄寫進去檔案的是在run_ppo.py，那邊也需要改你log的檔名。
+drawing.py是for metaworld, drawing_frozenlake.py是for frozenlake.

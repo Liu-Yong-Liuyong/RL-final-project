@@ -16,5 +16,8 @@ def make_env(env_name: str, **kwargs):
     elif env_name == "metaworld_button":
         from envs.metaworld_button_env import MetaWorldButtonEnv
         return MetaWorldButtonEnv(**kwargs)
+    elif env_name == "metaworld_pick_place":
+        from envs.metaworld_pick_env import MetaWorldPickPlaceEnv
+        return MetaWorldPickPlaceEnv(**kwargs)
     else:
         raise ValueError(f"Unknown environment: {env_name}")

@@ -34,3 +34,6 @@ class MetaWorldReachEnv(BaseBenchmarkEnv):
 
     def close(self):
         self.env.close()
+
+    def get_target_pos(self):
+        return np.asarray(self.env.unwrapped._target_pos)

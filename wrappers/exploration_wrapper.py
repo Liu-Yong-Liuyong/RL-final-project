@@ -3,6 +3,34 @@ import math
 import gymnasium as gym
 import numpy as np
 
+class ExplorationLoggingWrapper(gym.Wrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        self.exploration_log = []
+        self.global_step = 0
+
+    def reset(self, **kwargs):
+        obs, info = self.env.reset(**kwargs)
+        return obs, info
+
+    def step(self, action):
+        obs, reward, terminated, truncated, info = self.env.step(action)
+
+        self.global_step += 1
+        self.exploration_log.append({
+            "coverage_id": info.get("coverage_id"),
+            "global_step": self.global_step,
+            "target_pos": self.env.unwrapped.get_target_pos().tolist(),## for metaworld
+            #"goal_state": int(self.env.get_goal_state()),
+            "method": "ppo",
+        })
+
+        return obs, reward, terminated, truncated, info
+
+    def pop_exploration_logs(self):
+        logs = self.exploration_log
+        self.exploration_log = []
+        return logs
 
 class IntrinsicRewardWrapper(gym.Wrapper):
     def __init__(self, env, bonus_coef=0.01, mode="count_based"):
@@ -53,6 +81,8 @@ class CuriosityRewardWrapper(gym.Wrapper):
         self.int_count = 1e-4
         self.int_mean = 0.0
         self.int_M2 = 0.0
+        
+        self.exploration_log = [] ##for 2d drawing
 
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
@@ -108,7 +138,14 @@ class CuriosityRewardWrapper(gym.Wrapper):
         info["intrinsic_reward_raw"] = float(intrinsic_reward)
         info["intrinsic_reward"] = float(processed_intrinsic_reward)
         info["total_reward"] = float(total_reward)
-
+        ########################################### for 2d drawing
+        self.exploration_log.append({
+            "coverage_id": info.get("coverage_id"),
+            "target_pos": self.env.unwrapped.get_target_pos().tolist(),## for metaworld
+            #"goal_state": int(self.env.get_goal_state()),
+            "intrinsic_reward": float(processed_intrinsic_reward),
+        })
+        ###########################################
         if terminated or truncated:
             self.prev_obs = None
         else:
@@ -120,7 +157,12 @@ class CuriosityRewardWrapper(gym.Wrapper):
         transitions = self.transition_buffer
         self.transition_buffer = []
         return transitions
-
+    ######################################for 2d drawing
+    def pop_exploration_logs(self):
+        logs = self.exploration_log
+        self.exploration_log = []
+        return logs
+    ##############################################
 #normalized rnd
 class RNDRewardWrapper(gym.Wrapper):
     def __init__(self, env, rnd_module, reward_scale=0.001):
@@ -132,6 +174,7 @@ class RNDRewardWrapper(gym.Wrapper):
         self.int_reward_mean = 0.0
         self.int_reward_var = 1.0
         self.int_reward_count = 1e-4
+        self.exploration_log = [] ##for 2d drawing
 
     def _update_running_stats(self, x):
         self.int_reward_count += 1
@@ -163,6 +206,14 @@ class RNDRewardWrapper(gym.Wrapper):
         info["intrinsic_reward_raw"] = intrinsic_reward
         info["intrinsic_reward"] = float(normalized_intrinsic_reward)
         info["total_reward"] = float(total_reward)
+        ########################################### for 2d drawing
+        self.exploration_log.append({
+            "coverage_id": info.get("coverage_id"),
+            "target_pos": self.env.unwrapped.get_target_pos().tolist(),## for metaworld
+            #"goal_state": int(self.env.get_goal_state()),
+            "intrinsic_reward": float(normalized_intrinsic_reward),
+        })
+        ###########################################
 
         return next_obs, total_reward, terminated, truncated, info
 
@@ -170,3 +221,9 @@ class RNDRewardWrapper(gym.Wrapper):
         observations = self.obs_buffer
         self.obs_buffer = []
         return observations
+    ######################################for 2d drawing
+    def pop_exploration_logs(self):
+        logs = self.exploration_log
+        self.exploration_log = []
+        return logs
+    ##############################################

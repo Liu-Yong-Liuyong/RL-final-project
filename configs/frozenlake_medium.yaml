@@ -14,11 +14,11 @@ wrappers:
     enabled: false
     kwargs: {}
 
-  exploration:
-    enabled: true
-    method: intrinsic_count
-    kwargs:
-      bonus_coef: 0.05
+  #exploration:
+    #enabled: true
+    #method: intrinsic_count
+    #kwargs:
+      #bonus_coef: 0.05
   #exploration:
     #enabled: false
     #method: null
@@ -45,6 +45,10 @@ wrappers:
       #feature_dim: 64
       #hidden_dim: 128
       #device: "cpu"
+  exploration:
+    enabled: true
+    method: logging_only
+    kwargs: {}
 
 agent:
   name: ppo
@@ -54,22 +58,32 @@ agent:
     gamma: 0.99
     ent_coef: 0.0
     verbose: 1
+    tensorboard_log: "./wandb/logs"
 
 train:
-  total_timesteps: 500000
+  total_timesteps: 500000 #500000
 
 output:
-  #save_path: "checkpoints/ppo_frozenlake_medium"
-  #save_path: "checkpoints/ppo_frozenlake_medium_entcoef"
-  save_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic"
+  save_path: "checkpoints/ppo_frozenlake_medium"
+  #save_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic"
   #save_path: "checkpoints/ppo_frozenlake_medium_icm"
   #save_path: "checkpoints/ppo_frozenlake_medium_rnd"
-
+  #best_save_path: "checkpoints/ppo_frozenlake_medium_rnd_best"
+  #best_save_path: "checkpoints/ppo_frozenlake_medium_icm_best"
+  best_save_path: "checkpoints/ppo_frozenlake_medium_best"
+eval:
 eval:
   num_episodes: 1000
   max_steps: 500
-  #model_path: "checkpoints/ppo_frozenlake_medium.zip"
+  model_path: "checkpoints/ppo_frozenlake_medium_best.zip"
   #model_path: "checkpoints/ppo_frozenlake_medium_entcoef.zip"
-  model_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic.zip"
+  #model_path: "checkpoints/ppo_frozenlake_medium_count_intrinsic.zip"
   #model_path: "checkpoints/ppo_frozenlake_medium_icm.zip"
-  #model_path: "checkpoints/ppo_frozenlake_medium_rnd.zip"
+  #model_path: "checkpoints/ppo_frozenlake_medium_rnd_best.zip"
+  #model_path: "checkpoints/ppo_frozenlake_medium_icm_best.zip"
+
+wandb:
+  enabled: true
+  project: "rl-frozenlake-benchmark"
+  name: "ppo-none-frozenlake-v3"
+  tags: ["frozenlake", "none"]

@@ -14,9 +14,11 @@ from algorithms.callbacks import EWMASuccessCallback
 
 from wrappers.sparse_reward_wrappers import SparseRewardWrapper
 from wrappers.sparse_reward_wrappers import GoalThresholdRewardWrapper #trying
+from wrappers.sparse_reward_wrappers import PickPlaceMilestoneRewardWrapper #trying pick
 from wrappers.exploration_wrapper import IntrinsicRewardWrapper
 from wrappers.exploration_wrapper import CuriosityRewardWrapper
 from wrappers.exploration_wrapper import RNDRewardWrapper
+from wrappers.exploration_wrapper import ExplorationLoggingWrapper
 from algorithms.icm_module import ICMModule
 from algorithms.rnd_module import RNDModule
 from algorithms.icm_callback import ICMUpdateCallback
@@ -54,6 +56,8 @@ def build_env_from_config(config: dict):
             env = SparseRewardWrapper(env, **sparse_kwargs)
         elif sparse_type == "goal_threshold":
             env = GoalThresholdRewardWrapper(env, **sparse_kwargs)
+        elif sparse_type == "pick_place_milestone":
+            env = PickPlaceMilestoneRewardWrapper(env, **sparse_kwargs)
         else:
             raise ValueError(f"Unknown sparse reward wrapper type: {sparse_type}")
 
@@ -91,7 +95,8 @@ def main():
                 env,
                 **exploration_cfg.get("kwargs", {})
             )
-
+        elif method == "logging_only":  ##for only ppo drawing
+            env = ExplorationLoggingWrapper(env)
         elif method == "icm":
             obs_dim = env.observation_space.shape[0]
 

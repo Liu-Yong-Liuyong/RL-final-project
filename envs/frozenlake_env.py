@@ -42,7 +42,10 @@ class FrozenLakeEnv(BaseBenchmarkEnv):
         if info is not None and "success" in info:
             return bool(info["success"])
         return False
+    def get_goal_state(self):
+        return self.n_states - 1
 '''
+#有render的版本
 import gymnasium as gym
 import numpy as np
 from gymnasium.spaces import Box

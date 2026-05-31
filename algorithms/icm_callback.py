@@ -1,6 +1,7 @@
 from stable_baselines3.common.callbacks import BaseCallback
 import torch
-
+import os
+import json
 
 class ICMUpdateCallback(BaseCallback):
     def __init__(
@@ -19,13 +20,24 @@ class ICMUpdateCallback(BaseCallback):
         self.beta = beta
         self.update_freq = update_freq
 
+        self.saved_exploration_logs = [] #for 2d drawing
+
     def _on_step(self) -> bool:
         if self.n_calls % self.update_freq != 0:
             return True
 
         transitions = self.env_wrapper.pop_transitions()
+        
         if len(transitions) == 0:
             return True
+
+        ##############################################
+        exploration_logs = self.env_wrapper.pop_exploration_logs()
+        for item in exploration_logs:
+            item["global_step"] = self.num_timesteps
+            item["method"] = "icm"
+            self.saved_exploration_logs.append(item)
+        ##############################################
 
         device = self.icm_module.device
 
@@ -90,3 +102,13 @@ class ICMUpdateCallback(BaseCallback):
 
         return True
 
+    def _on_training_end(self) -> None:
+        save_dir = "exploration_logs"
+        os.makedirs(save_dir, exist_ok=True)
+
+        #save_path = os.path.join(save_dir, "icm_exploration_frozenlake_log.json")
+        save_path = os.path.join(save_dir, "icm_dc0_exploration_log.json")
+        with open(save_path, "w", encoding="utf-8") as f:
+            json.dump(self.saved_exploration_logs, f, ensure_ascii=False, indent=2)
+
+        print(f"[ICM] Exploration log saved to {save_path}")
