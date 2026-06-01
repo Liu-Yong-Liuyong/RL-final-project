@@ -17,9 +17,9 @@ class GridWorldEnv(BaseBenchmarkEnv):
         self.random_seed = random_seed
         
         self.observation_space = spaces.Box(
-            low=np.array([0, 0]), 
-            high=np.array([width-1, height-1]), 
-            dtype=np.int32
+            low=np.array([0.0, 0.0]), 
+            high=np.array([1.0, 1.0]), 
+            dtype=np.float32
         )
         self.action_space = spaces.Discrete(4)
         
@@ -71,7 +71,10 @@ class GridWorldEnv(BaseBenchmarkEnv):
 
         self.current_step = 0
         
-        obs = np.array(self.current_pos, dtype=np.int32)
+        obs = np.array([
+            self.current_pos[0] / (self.width - 1),
+            self.current_pos[1] / (self.height - 1)
+        ], dtype=np.float32)
         info = {"success": False}
         info = self.build_info(obs, info)
         return obs, info
@@ -105,7 +108,7 @@ class GridWorldEnv(BaseBenchmarkEnv):
         return obs, reward, terminated, truncated, info
 
     def get_coverage_id(self, obs):
-        return tuple(obs.tolist())
+        return tuple(self.current_pos)
 
     def is_success(self, obs, info=None):
         if info is not None and "success" in info:
