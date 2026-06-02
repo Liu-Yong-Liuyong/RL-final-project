@@ -7,16 +7,21 @@ env:
 wrappers:
   sparse_reward:
     enabled: true
-    type: "goal_threshold"
+    type: "basic"
     kwargs:
-      success_reward: 50.0
-      threshold_rewards:
-        - [0.12, 0.05]
-        - [0.07, 0.1]
-        - [0.03, 0.5]
+      success_reward: 10.0
       failure_reward: 0.0
-      use_dense_fallback: true
-      dense_coef: 0.005 #0.005
+      dense_scale: 0
+    # type: "goal_threshold"
+    # kwargs:
+    #   success_reward: 50.0
+    #   threshold_rewards:
+    #     - [0.12, 0.05]
+    #     - [0.07, 0.1]
+    #     - [0.03, 0.5]
+    #   failure_reward: 0.0
+    #   use_dense_fallback: true
+    #   dense_coef: 0.005 #0.005
 
   exploration:
     enabled: true
@@ -30,6 +35,16 @@ wrappers:
       hidden_dim: 128
       device: "cpu"
       clip_intrinsic: 5.0
+  # exploration:
+  #   enabled: true
+  #   method: rnd
+  #   kwargs:
+  #     reward_scale: 0.01
+  #     rnd_lr: 0.0005
+  #     update_freq: 1000
+  #     feature_dim: 32
+  #     hidden_dim: 64
+  #     device: "cpu"
 
 agent:
   name: ppo
@@ -46,16 +61,16 @@ train:
   total_timesteps: 3000000
 
 output:
-  save_path: "checkpoints/ppo_metaworld_button_sparse_icm_goal"
-  best_save_path: "checkpoints/ppo_metaworld_button_sparse_icm_goal_best"
+  save_path: "checkpoints/ppo_metaworld_button_sparse_icm_basic"
+  best_save_path: "checkpoints/ppo_metaworld_button_sparse_icm_basic_best"
 
 eval:
   num_episodes: 100
   max_steps: 500
-  model_path: "checkpoints/ppo_metaworld_button_sparse_icm_goal_best.zip"
+  model_path: "checkpoints/ppo_metaworld_button_sparse_icm_basic_best.zip"
 
 wandb:
   enabled: true
   project: "rl-exploration-benchmark"
-  name: "ppo-icm-button-press"
-  tags: ["metaworld_button", "sparse", "icm", "goal_threshold"]
+  name: "ppo-button-press"
+  tags: ["metaworld_button", "sparse", "icm", "basic", "final"]

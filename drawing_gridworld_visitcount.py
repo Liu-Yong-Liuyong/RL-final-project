@@ -7,11 +7,26 @@ import matplotlib.patches as mpatches
 
 env_yaml = "configs/gridworld_easy.yaml"
 
-exploration_log = "exploration_logs/icm_50x50_exploration_log.json"
-output_image = "exploration_pictures/gridworld/icm_50x50_gridworld_firstvisit"
+# exploration_log = "exploration_logs/none_20x20_exploration_obstacles_log.json"
+# output_image = "exploration_pictures/gridworld/none_20x20_gridworld_obstacles_visitcount"
+# exploration_log = "exploration_logs/icm_20x20_exploration_obstacles_log.json"
+# output_image = "exploration_pictures/gridworld/icm_20x20_gridworld_obstacles_visitcount" 
+# exploration_log = "exploration_logs/rnd_20x20_exploration_obstacles_log.json"
+# output_image = "exploration_pictures/gridworld/rnd_20x20_gridworld_obstacles_visitcount" 
 
+exploration_log = "exploration_logs/none_50x50_exploration_obstacles_log.json"
+output_image = "exploration_pictures/gridworld/none_50x50_gridworld_obstacles_visitcount"
+# exploration_log = "exploration_logs/icm_50x50_exploration_obstacles_log.json"
+# output_image = "exploration_pictures/gridworld/icm_50x50_gridworld_obstacles_visitcount" 
+# exploration_log = "exploration_logs/rnd_50x50_exploration_obstacles_log.json"
+# output_image = "exploration_pictures/gridworld/rnd_50x50_gridworld_obstacles_visitcount" 
+
+# exploration_log = "exploration_logs/none_50x50_exploration_log.json"
+# output_image = "exploration_pictures/gridworld/none_50x50_gridworld_visitcount"
+# exploration_log = "exploration_logs/icm_50x50_exploration_log.json"
+# output_image = "exploration_pictures/gridworld/icm_50x50_gridworld_visitcount"
 # exploration_log = "exploration_logs/rnd_50x50_exploration_log.json"
-# output_image = "exploration_pictures/gridworld/rnd_50x50_gridworld_firstvisit"
+# output_image = "exploration_pictures/gridworld/rnd_50x50_gridworld_visitcount"
 
 # ==========================================
 # 1. 定義輔助函數 (Obstacle Generation)
@@ -64,30 +79,29 @@ def main():
         logs = json.load(f)
 
     # ==========================================
-    # 3. 建立探索時間圖 (Heatmap)
+    # 3. 建立探索次數圖 (Visit Count Heatmap)
     # ==========================================
-    # 初始化全為 NaN 的地圖 (代表 never explored)
-    heatmap = np.full((height, width), np.nan)
+    # 初始化一個純粹用來計算「造訪次數」的地圖
+    visit_counts = np.zeros((height, width))
     
-    # 填入探索紀錄 (使用 global_step)
+    # 填入探索紀錄 (累加次數)
     for item in logs:
         x, y = item["coverage_id"]
-        # 只記錄「第一次」造訪的 global_step
-        if np.isnan(heatmap[y, x]):
-            heatmap[y, x] = item["global_step"]
+        visit_counts[y, x] += 1
             
-    # 標記 obstacle，用特殊值 -1 表示
-    OBSTACLE = -1
+    # 建立一個獨立的 Obstacle Mask (True 代表是障礙物)
+    obs_mask = np.zeros((height, width), dtype=bool)
     for x, y in obstacles:
-        heatmap[y, x] = OBSTACLE
+        obs_mask[y, x] = True
 
     # ==========================================
     # 4. 畫圖 (Visualization)
     # ==========================================
-    # 只對非 obstacle 的部分做顏色映射 (Masking)
-    masked = np.ma.masked_where(heatmap == OBSTACLE, heatmap)
+    # 只對非 obstacle 且有造訪過的部分做顏色映射 (Masking)
+    # 條件：如果是障礙物 (obs_mask) 或 次數為 0 (visit_counts == 0) 就遮蔽掉
+    masked = np.ma.masked_where(obs_mask | (visit_counts == 0), visit_counts)
     
-    # 設定 colormap，將 NaN (未探索) 設為黑色
+    # 設定 colormap，將被遮蔽 (未探索) 的地方設為黑色
     cmap = plt.cm.viridis.copy()
     cmap.set_bad("black")
     
@@ -96,32 +110,27 @@ def main():
     # 第一層：繪製熱力圖與黑色未探索區域
     im = plt.imshow(masked, cmap=cmap, origin="upper")
     
-    # 第二層：精準繪製 Obstacles (使用 RGBA 矩陣，完美填滿網格無空隙)
-    # 建立一個與地圖同大小的全透明 RGBA 圖層 (4 個 channel: R, G, B, Alpha)
+    # 第二層：精準繪製 Obstacles
+    # 建立一個與地圖同大小的全透明 RGBA 圖層
     obs_layer = np.zeros((height, width, 4)) 
-    obs_y, obs_x = np.where(heatmap == OBSTACLE)
-    # 將有障礙物的位置設為純白，且完全不透明 (R=1, G=1, B=1, Alpha=1)
-    obs_layer[obs_y, obs_x] = [1.0, 1.0, 1.0, 1.0] 
+    # 直接利用剛剛建立的 bool mask，把障礙物的位置設為純白不透明
+    obs_layer[obs_mask] = [1.0, 1.0, 1.0, 1.0] 
     plt.imshow(obs_layer, origin="upper")
     
-    # 繪製 Start & Goal (這兩個用 scatter 沒問題，因為標記不用填滿網格)
+    # 繪製 Start & Goal
     start_x, start_y = start_pos
     goal_x, goal_y = goal_pos
     plt.scatter(start_x, start_y, c="red", marker="o", s=250, label="Start")
-    plt.scatter(goal_x, goal_y, c="green", marker="o", s=250, label="Goal")
+    plt.scatter(goal_x, goal_y, c="cyan", marker="o", s=250, label="Goal")
     
     # 圖表收尾設定
-    # 由於 imshow 不會自動產生圖例，我們手動建立一個白色方塊的圖例
-    obs_patch = mpatches.Patch(color='white', label='Obstacle', ec="black") # ec="black" 加個黑邊框讓白色方塊在圖例中更明顯
+    obs_patch = mpatches.Patch(color='white', label='Obstacle', ec="black") 
     
-    # 取得現有的 handles 和 labels (Start 和 Goal)
     handles, labels = plt.gca().get_legend_handles_labels()
     
-    # 把 Obstacle 手動加進去圖例清單的最前面
     handles.insert(0, obs_patch)
     labels.insert(0, "Obstacle")
     
-    # 放置圖例到最下方
     plt.legend(
         handles=handles,
         labels=labels,
@@ -130,12 +139,12 @@ def main():
         ncol=3, 
         frameon=True
     )
-    plt.colorbar(im, label="First Visit Order (Global Step)")
-    plt.title("Exploration Heatmap")
+    plt.colorbar(im, label="Visit Count (Frequency)")
+    plt.title("Exploration Visit Count Heatmap")
     
     plt.tight_layout()
     
-    # 如果你要存檔，可以用這行 (取代或放在 plt.show() 之前)
+    # 如果你要存檔，可以用這行
     plt.savefig(f"{output_image}.png", dpi=300, bbox_inches="tight")
     
     plt.show()

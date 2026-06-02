@@ -5,7 +5,7 @@ env:
     height: 50
     start_pos: [0,0]
     goal_pos: [49,49]
-    num_obstacles: 1000
+    num_obstacles: 100
     random_seed: 42
     max_steps: 4000
 
@@ -14,6 +14,10 @@ seed: 42
 wrappers:
   sparse_reward:
     enabled: false
+    kwargs: {}
+  exploration:
+    enabled: true
+    method: logging_only
     kwargs: {}
   # exploration:
   #   enabled: true
@@ -27,16 +31,16 @@ wrappers:
   #     hidden_dim: 64
   #     device: "cpu"
   #     clip_intrinsic: 0.1
-  exploration:
-    enabled: true
-    method: rnd
-    kwargs:
-      reward_scale: 0.001
-      rnd_lr: 0.0005
-      update_freq: 4096
-      feature_dim: 32
-      hidden_dim: 64
-      device: "cpu"
+  # exploration:
+  #   enabled: true
+  #   method: rnd
+  #   kwargs:
+  #     reward_scale: 0.001
+  #     rnd_lr: 0.0005
+  #     update_freq: 4096
+  #     feature_dim: 32
+  #     hidden_dim: 64
+  #     device: "cpu"
 
 agent:
   name: ppo
@@ -52,26 +56,24 @@ train:
 
 output:
   # save_path: "checkpoints/ppo_gridworld_easy"
-  # save_path: "checkpoints/ppo_gridworld_easy_entcoef"
+  save_path: "checkpoints/ppo_gridworld_easy_50x50_obstacles_none"  
   # save_path: "checkpoints/ppo_gridworld_easy_count_intrinsic"
   # save_path: "checkpoints/ppo_gridworld_easy_icm"
-  save_path: "checkpoints/ppo_gridworld_easy_rnd"
+  # save_path: "checkpoints/ppo_gridworld_easy_rnd"
 
-  # best_save_path: "checkpoints/ppo_gridworld_easy_entcoef_best"
+  best_save_path: "checkpoints/ppo_gridworld_easy_50x50_obstacles_none_best"
   # best_save_path: "checkpoints/ppo_gridworld_easy_icm_best"
-  best_save_path: "checkpoints/ppo_gridworld_easy_rnd_best"
+  # best_save_path: "checkpoints/ppo_gridworld_easy_rnd_best"
 
 eval:
   num_episodes: 5
   max_steps: 3000
-  # model_path: "checkpoints/ppo_gridworld_easy.zip"
-  # model_path: "checkpoints/ppo_gridworld_easy_entcoef.zip"
-  # model_path: "checkpoints/ppo_gridworld_easy_count_intrinsic.zip"
+  model_path: "checkpoints/ppo_gridworld_easy_50x50_obstacles_none_best.zip"
   # model_path: "checkpoints/ppo_gridworld_easy_icm_best.zip"
-  model_path: "checkpoints/ppo_gridworld_easy_rnd_best.zip"
+  # model_path: "checkpoints/ppo_gridworld_easy_rnd_best.zip"
 
 wandb:
   enabled: true
   project: "rl-exploration-benchmark"
   name: "ppo-gridworld"
-  tags: ["gridworld", "rnd", "50*50"]
+  tags: ["gridworld", "none", "50*50", "obstacles"]
