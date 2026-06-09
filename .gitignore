@@ -208,3 +208,9 @@ __marimo__/
 
 # Claude Code
 .claude/
+
+# Weights & Biases local logs
+wandb/
+
+# Generated result figures
+results/

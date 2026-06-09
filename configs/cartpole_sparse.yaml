@@ -26,30 +26,30 @@ wrappers:
   #     bonus_coef: 0.05
 
   # [3] ICM
-  exploration:
-    enabled: true
-    method: icm
-    kwargs:
-      reward_scale: 0.001
-      icm_lr: 0.0003
-      beta: 0.2
-      update_freq: 1000
-      feature_dim: 64
-      hidden_dim: 128
-      device: "cpu"
-      clip_intrinsic: 5.0
-
-  # [4] RND
   # exploration:
   #   enabled: true
-  #   method: rnd
+  #   method: icm
   #   kwargs:
   #     reward_scale: 0.001
-  #     rnd_lr: 0.001
+  #     icm_lr: 0.0003
+  #     beta: 0.2
   #     update_freq: 1000
   #     feature_dim: 64
   #     hidden_dim: 128
   #     device: "cpu"
+  #     clip_intrinsic: 5.0
+
+  # [4] RND
+  exploration:
+    enabled: true
+    method: rnd
+    kwargs:
+      reward_scale: 0.001
+      rnd_lr: 0.001
+      update_freq: 1000
+      feature_dim: 64
+      hidden_dim: 128
+      device: "cpu"
 
 agent:
   name: ppo
@@ -67,19 +67,20 @@ train:
 output:
   # save_path: "checkpoints/ppo_cartpole_sparse_entropy"   # [1] Entropy Reg
   # save_path: "checkpoints/ppo_cartpole_sparse_count"    # [2] Count
-  save_path: "checkpoints/ppo_cartpole_sparse_icm"      # [3] ICM
-  # save_path: "checkpoints/ppo_cartpole_sparse_rnd"      # [4] RND
+  # save_path: "checkpoints/ppo_cartpole_sparse_icm"      # [3] ICM
+  save_path: "checkpoints/ppo_cartpole_sparse_rnd"      # [4] RND
 
 eval:
   num_episodes: 20
   max_steps: 500
   # model_path: "checkpoints/ppo_cartpole_sparse_entropy.zip"
   # model_path: "checkpoints/ppo_cartpole_sparse_count.zip"
-  model_path: "checkpoints/ppo_cartpole_sparse_icm.zip"
-  # model_path: "checkpoints/ppo_cartpole_sparse_rnd.zip"
+  # model_path: "checkpoints/ppo_cartpole_sparse_icm.zip"
+  model_path: "checkpoints/ppo_cartpole_sparse_rnd.zip"
 
 wandb:
-  enabled: false
+  enabled: true
   project: "rl-exploration-benchmark"
-  name: "cartpole-entropy"
-  tags: ["cartpole", "entropy"]
+  # name and tags are auto-generated from env + method if left blank
+  name: null
+  tags: null
