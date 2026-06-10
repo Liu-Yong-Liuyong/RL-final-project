@@ -10,7 +10,7 @@ import numpy as np
 
 from scripts.make_env import make_env
 from algorithms.run_ppo import run_ppo
-from algorithms.callbacks import EWMASuccessCallback
+from algorithms.callbacks import EWMASuccessCallback, CartPoleHeatmapCallback
 
 from wrappers.sparse_reward_wrappers import SparseRewardWrapper
 from wrappers.sparse_reward_wrappers import GoalThresholdRewardWrapper #trying
@@ -79,6 +79,7 @@ def main():
     set_global_seeds(seed)
 
     env_cfg = config["env"]
+
     wrappers_cfg = config.get("wrappers", {})
 
     env = build_env_from_config(config)
@@ -179,26 +180,43 @@ def main():
 
     if agent_cfg["name"].lower() != "ppo":
         raise ValueError(f"Unsupported agent: {agent_cfg['name']}")
-    
-    #add wandb
+
+    save_path = output_cfg["save_path"]
+
     wandb_cfg = config.get("wandb", {})
     if wandb_cfg.get("enabled", False):
         try:
             import wandb
+            exploration_cfg = config.get("wrappers", {}).get("exploration", {})
+            if exploration_cfg.get("enabled", False):
+                method = exploration_cfg.get("method", "unknown")
+            else:
+                method = "entropy"
+            
+            auto_name = wandb_cfg.get("name") or f"{env_cfg['name']}-{method}-seed{seed}"
+            auto_tags = wandb_cfg.get("tags") or [env_cfg["name"], method]
+
             run = wandb.init(
                 project=wandb_cfg.get("project", "rl-exploration-benchmark"),
-                name=wandb_cfg.get("name", None),
-                tags=wandb_cfg.get("tags", []),
+                name=auto_name,
+                tags=auto_tags,
                 config=config,
                 sync_tensorboard=True,
             )
+            
             wandb.define_metric("global_step") 
             wandb.define_metric("*", step_metric="global_step")
             agent_cfg["kwargs"]["tensorboard_log"] = run.dir
             callback_list.append(WandbCallback(verbose=2))
+            
         except ImportError:
             print("[WARNING] wandb not installed — skipping wandb logging. Run: pip install wandb")
-            
+
+    if env_cfg["name"].lower() == "cartpole":
+        callback_list.append(CartPoleHeatmapCallback(
+            heatmap_freq=10000,
+            save_npy_path=f"{save_path}_visits.npy",
+        ))
     eval_env = build_env_from_config(config)
     eval_env.reset(seed=seed)
 
@@ -209,6 +227,7 @@ def main():
         max_steps=train_cfg.get("ewma_max_steps", 200),
         alpha=0.3,
         success_threshold=0.8,
+        log_csv_path=f"{save_path}_eval.csv",
         verbose=1,
         best_model_save_path=output_cfg["best_save_path"]
     )

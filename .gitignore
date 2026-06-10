@@ -207,7 +207,14 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 exploration_logs/*.json
-wandb/
 exploration_logs/
-wandb/
 checkpoints/
+
+# Claude Code
+.claude/
+
+# Weights & Biases local logs
+wandb/
+
+# Generated result figures
+results/
