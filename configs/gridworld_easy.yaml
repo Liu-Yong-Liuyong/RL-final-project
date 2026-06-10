@@ -1,13 +1,21 @@
 env:
   name: gridworld
+  # kwargs:
+  #   width: 50
+  #   height: 50
+  #   start_pos: [0,0]
+  #   goal_pos: [49,49]
+  #   num_obstacles: 100
+  #   random_seed: 42
+  #   max_steps: 4000
   kwargs:
-    width: 50
-    height: 50
+    width: 20
+    height: 20
     start_pos: [0,0]
-    goal_pos: [49,49]
-    num_obstacles: 100
-    random_seed: 42
-    max_steps: 4000
+    goal_pos: [19,19]
+    num_obstacles: 25
+    random_seed: 52
+    max_steps: 100
 
 seed: 42
 
@@ -15,10 +23,10 @@ wrappers:
   sparse_reward:
     enabled: false
     kwargs: {}
-  exploration:
-    enabled: true
-    method: logging_only
-    kwargs: {}
+  # exploration:
+  #   enabled: true
+  #   method: logging_only
+  #   kwargs: {}
   # exploration:
   #   enabled: true
   #   method: icm
@@ -31,16 +39,16 @@ wrappers:
   #     hidden_dim: 64
   #     device: "cpu"
   #     clip_intrinsic: 0.1
-  # exploration:
-  #   enabled: true
-  #   method: rnd
-  #   kwargs:
-  #     reward_scale: 0.001
-  #     rnd_lr: 0.0005
-  #     update_freq: 4096
-  #     feature_dim: 32
-  #     hidden_dim: 64
-  #     device: "cpu"
+  exploration:
+    enabled: true
+    method: rnd
+    kwargs:
+      reward_scale: 0.001
+      rnd_lr: 0.0005
+      update_freq: 4096
+      feature_dim: 32
+      hidden_dim: 64
+      device: "cpu"
 
 agent:
   name: ppo
@@ -56,19 +64,28 @@ train:
 
 output:
   # save_path: "checkpoints/ppo_gridworld_easy"
-  save_path: "checkpoints/ppo_gridworld_easy_50x50_obstacles_none"  
+  # save_path: "checkpoints/ppo_gridworld_easy_20x20_obstacles_none"  
+  # save_path: "checkpoints/ppo_gridworld_easy_20x20_obstacles_icm"  
+  save_path: "checkpoints/ppo_gridworld_easy_20x20_obstacles_rnd"  
+  # save_path: "checkpoints/ppo_gridworld_easy_50x50_obstacles_none"  
   # save_path: "checkpoints/ppo_gridworld_easy_count_intrinsic"
   # save_path: "checkpoints/ppo_gridworld_easy_icm"
   # save_path: "checkpoints/ppo_gridworld_easy_rnd"
 
-  best_save_path: "checkpoints/ppo_gridworld_easy_50x50_obstacles_none_best"
+  # best_save_path: "checkpoints/ppo_gridworld_easy_20x20_obstacles_none_best"
+  # best_save_path: "checkpoints/ppo_gridworld_easy_20x20_obstacles_icm_best"
+  best_save_path: "checkpoints/ppo_gridworld_easy_20x20_obstacles_rnd_best"
+  # best_save_path: "checkpoints/ppo_gridworld_easy_50x50_obstacles_none_best"
   # best_save_path: "checkpoints/ppo_gridworld_easy_icm_best"
   # best_save_path: "checkpoints/ppo_gridworld_easy_rnd_best"
 
 eval:
   num_episodes: 5
   max_steps: 3000
-  model_path: "checkpoints/ppo_gridworld_easy_50x50_obstacles_none_best.zip"
+  # model_path: "checkpoints/ppo_gridworld_easy_20x20_obstacles_none_best.zip"
+  # model_path: "checkpoints/ppo_gridworld_easy_20x20_obstacles_icm_best.zip"
+  model_path: "checkpoints/ppo_gridworld_easy_20x20_obstacles_rnd_best.zip"
+  # model_path: "checkpoints/ppo_gridworld_easy_50x50_obstacles_none_best.zip"
   # model_path: "checkpoints/ppo_gridworld_easy_icm_best.zip"
   # model_path: "checkpoints/ppo_gridworld_easy_rnd_best.zip"
 
@@ -76,4 +93,4 @@ wandb:
   enabled: true
   project: "rl-exploration-benchmark"
   name: "ppo-gridworld"
-  tags: ["gridworld", "none", "50*50", "obstacles"]
+  tags: ["gridworld", "rnd", "20*20", "obstacles"]

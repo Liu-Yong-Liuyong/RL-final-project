@@ -1,8 +1,9 @@
 env:
-  name: metaworld
+  name: metaworld_button
   kwargs:
     task_name: "button-press-v3"
     render_mode: null
+    fixed_seed: 42
 
 wrappers:
   sparse_reward:
@@ -22,24 +23,28 @@ wrappers:
     #   failure_reward: 0.0
     #   use_dense_fallback: true
     #   dense_coef: 0.005 #0.005
-
+    
   exploration:
     enabled: true
-    method: icm
-    kwargs:
-      reward_scale: 0.001
-      icm_lr: 0.0003
-      beta: 0.5
-      update_freq: 1000
-      feature_dim: 64
-      hidden_dim: 128
-      device: "cpu"
-      clip_intrinsic: 5.0
+    method: logging_only
+    kwargs: {}
+  # exploration:
+  #   enabled: true
+  #   method: icm
+  #   kwargs:
+  #     reward_scale: 0.001
+  #     icm_lr: 0.0003
+  #     beta: 0.5
+  #     update_freq: 1000
+  #     feature_dim: 64
+  #     hidden_dim: 128
+  #     device: "cpu"
+  #     clip_intrinsic: 5.0
   # exploration:
   #   enabled: true
   #   method: rnd
   #   kwargs:
-  #     reward_scale: 0.01
+  #     reward_scale: 0.001
   #     rnd_lr: 0.0005
   #     update_freq: 1000
   #     feature_dim: 32
@@ -58,19 +63,25 @@ agent:
     tensorboard_log: "./wandb/logs"
 
 train:
-  total_timesteps: 3000000
+  total_timesteps: 5000000
 
 output:
-  save_path: "checkpoints/ppo_metaworld_button_sparse_icm_basic"
-  best_save_path: "checkpoints/ppo_metaworld_button_sparse_icm_basic_best"
+  save_path: "checkpoints/none_metaworld_button_sparse_icm_basic"
+  # save_path: "checkpoints/ppo_metaworld_button_sparse_icm_basic"
+  # save_path: "checkpoints/ppo_metaworld_button_sparse_rnd_basic"
+  best_save_path: "checkpoints/none_metaworld_button_sparse_icm_basic_best"
+  # best_save_path: "checkpoints/ppo_metaworld_button_sparse_icm_basic_best"
+  # best_save_path: "checkpoints/ppo_metaworld_button_sparse_rnd_basic_best"
 
 eval:
   num_episodes: 100
   max_steps: 500
-  model_path: "checkpoints/ppo_metaworld_button_sparse_icm_basic_best.zip"
+  model_path: "checkpoints/none_metaworld_button_sparse_icm_basic_best.zip"
+  # model_path: "checkpoints/ppo_metaworld_button_sparse_icm_basic_best.zip"
+  # model_path: "checkpoints/ppo_metaworld_button_sparse_rnd_basic_best.zip"
 
 wandb:
   enabled: true
   project: "rl-exploration-benchmark"
   name: "ppo-button-press"
-  tags: ["metaworld_button", "sparse", "icm", "basic", "final"]
+  tags: ["metaworld_button", "sparse", "none", "basic", "final"]

@@ -7,15 +7,15 @@ import matplotlib.patches as mpatches
 
 env_yaml = "configs/gridworld_easy.yaml"
 
-# exploration_log = "exploration_logs/none_20x20_exploration_obstacles_log.json"
-# output_image = "exploration_pictures/gridworld/none_20x20_gridworld_obstacles_firstvisit"
+exploration_log = "exploration_logs/icm_20x20_exploration_obstacles_log.json"
+output_image = "exploration_pictures/gridworld/icm_20x20_gridworld_obstacles_firstvisit"
 # exploration_log = "exploration_logs/icm_20x20_exploration_obstacles_log.json"
 # output_image = "exploration_pictures/gridworld/icm_20x20_gridworld_obstacles_firstvisit"
 # exploration_log = "exploration_logs/rnd_20x20_exploration_obstacles_log.json"
 # output_image = "exploration_pictures/gridworld/rnd_20x20_gridworld_obstacles_firstvisit"
 
-exploration_log = "exploration_logs/none_50x50_exploration_obstacles_log.json"
-output_image = "exploration_pictures/gridworld/none_50x50_gridworld_obstacles_firstvisit"
+# exploration_log = "exploration_logs/none_50x50_exploration_obstacles_log.json"
+# output_image = "exploration_pictures/gridworld/none_50x50_gridworld_obstacles_firstvisit"
 # exploration_log = "exploration_logs/icm_50x50_exploration_obstacles_log.json"
 # output_image = "exploration_pictures/gridworld/icm_50x50_gridworld_obstacles_firstvisit"
 # exploration_log = "exploration_logs/rnd_50x50_exploration_obstacles_log.json"

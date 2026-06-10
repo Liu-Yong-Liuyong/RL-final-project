@@ -42,7 +42,8 @@ def run_ppo(env, total_timesteps: int, save_path: str, ppo_kwargs: dict, callbac
         log_dir.mkdir(parents=True, exist_ok=True)
 
         #log_path = log_dir / "none_exploration_frozenlake_log.json"
-        log_path = log_dir / "none_dc0_exploration_log.json"
+        # log_path = log_dir / "none_button_exploration_log.json"
+        log_path = log_dir / "none_20x20_exploration_obstacles_log.json"
         with open(log_path, "w", encoding="utf-8") as f:
             json.dump(log_wrapper.exploration_log, f, ensure_ascii=False, indent=2)
 

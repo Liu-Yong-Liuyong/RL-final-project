@@ -12,7 +12,8 @@ class RNDUpdateCallback(BaseCallback):
         self.update_freq = update_freq
         # self.saved_exploration_logs = [] #for 2d drawing
         self.save_dir = "exploration_logs"
-        self.save_path = os.path.join(self.save_dir, "rnd_50x50_exploration_log.json")
+        # self.save_path = os.path.join(self.save_dir, "rnd_button_exploration_log.json")
+        self.save_path = os.path.join(self.save_dir, "rnd_20x20_exploration_obstacles_log.json")
         self.is_first_write = True
 
         os.makedirs(self.save_dir, exist_ok=True)

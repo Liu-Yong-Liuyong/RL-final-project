@@ -22,7 +22,8 @@ class ICMUpdateCallback(BaseCallback):
 
         # self.saved_exploration_logs = [] #for 2d drawing
         self.save_dir = "exploration_logs"
-        self.save_path = os.path.join(self.save_dir, "icm_50x50_exploration_log.json")
+        # self.save_path = os.path.join(self.save_dir, "icm_button_exploration_log.json")
+        self.save_path = os.path.join(self.save_dir, "icm_20x20_exploration_obstacles_log.json")
         self.is_first_write = True
 
         os.makedirs(self.save_dir, exist_ok=True)
